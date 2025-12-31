@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    /* Adapts to browser theme - dark icon on light background, light icon on dark background */
+    @media (prefers-color-scheme: dark) {
+      .icon-fill { fill: #FFFFFF; }
+      .icon-stroke { stroke: #FFFFFF; }
+    }
+    @media (prefers-color-scheme: light) {
+      .icon-fill { fill: #1a1a1a; }
+      .icon-stroke { stroke: #1a1a1a; }
+    }
+  </style>
+  
+  <!-- Frame -->
+  <rect x="6" y="6" width="52" height="52" fill="none" class="icon-stroke" stroke-width="5" rx="6"/>
+  
+  <!-- Corner dots -->
+  <circle cx="13" cy="13" r="5" class="icon-fill"/>
+  <circle cx="51" cy="13" r="5" class="icon-fill"/>
+  <circle cx="13" cy="51" r="5" class="icon-fill"/>
+  <circle cx="51" cy="51" r="5" class="icon-fill"/>
+  
+  <!-- Number 4 (simplified and bold) -->
+  <path d="M 38 22 L 38 32 L 46 32 L 46 37 L 38 37 L 38 46 L 31 46 L 31 37 L 20 37 L 20 31 L 31 22 Z M 31 28 L 26 33 L 31 33 Z" class="icon-fill"/>
+</svg>

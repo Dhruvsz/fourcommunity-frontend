@@ -1,0 +1,14 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Group Finder Icon - White penguin without background -->
+  <ellipse cx="96" cy="120" rx="52" ry="67" fill="white"/>
+  <circle cx="96" cy="60" r="37" fill="white"/>
+  <circle cx="84" cy="52" r="6" fill="black"/>
+  <circle cx="108" cy="52" r="6" fill="black"/>
+  <polygon points="96,67 88,75 104,75" fill="white"/>
+  <ellipse cx="52" cy="105" rx="12" ry="30" fill="white"/>
+  <ellipse cx="140" cy="105" rx="12" ry="30" fill="white"/>
+  <ellipse cx="82" cy="180" rx="12" ry="7" fill="white"/>
+  <ellipse cx="110" cy="180" rx="12" ry="7" fill="white"/>
+  <!-- Group Finder Text -->
+  <text x="96" y="25" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="bold">GROUP FINDER</text>
+</svg>

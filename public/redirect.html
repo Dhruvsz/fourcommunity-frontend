@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting...</title>
+    <script>
+        // Extract the hash parameters from the URL
+        const hash = window.location.hash;
+        
+        if (hash) {
+            // Redirect to the correct port with the same hash
+            const newUrl = 'http://localhost:5173/auth/callback' + hash;
+            console.log('Redirecting to:', newUrl);
+            window.location.href = newUrl;
+        } else {
+            // No hash, redirect to home
+            window.location.href = 'http://localhost:5173/';
+        }
+    </script>
+</head>
+<body>
+    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+        <h2>Redirecting...</h2>
+        <p>Please wait while we redirect you to the correct page.</p>
+    </div>
+</body>
+</html>

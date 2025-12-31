@@ -1,0 +1,28 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main body -->
+  <ellipse cx="64" cy="80" rx="35" ry="45" fill="white"/>
+  
+  <!-- Head -->
+  <circle cx="64" cy="40" r="25" fill="white"/>
+  
+  <!-- Eyes -->
+  <circle cx="56" cy="35" r="4" fill="white"/>
+  <circle cx="72" cy="35" r="4" fill="white"/>
+  <circle cx="56" cy="35" r="2" fill="black"/>
+  <circle cx="72" cy="35" r="2" fill="black"/>
+  
+  <!-- Beak -->
+  <polygon points="64,45 59,50 69,50" fill="white"/>
+  
+  <!-- Wings -->
+  <ellipse cx="35" cy="70" rx="8" ry="20" fill="white"/>
+  <ellipse cx="93" cy="70" rx="8" ry="20" fill="white"/>
+  
+  <!-- Feet -->
+  <ellipse cx="55" cy="120" rx="8" ry="5" fill="white"/>
+  <ellipse cx="73" cy="120" rx="8" ry="5" fill="white"/>
+  
+  <!-- Group Finder Text -->
+  <text x="64" y="15" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">GROUP</text>
+  <text x="64" y="140" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="bold">FINDER</text>
+</svg>

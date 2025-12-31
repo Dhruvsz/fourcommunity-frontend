@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting to correct port...</title>
+    <script>
+        // Get the current URL with all parameters
+        const currentUrl = window.location.href;
+        console.log('Current URL:', currentUrl);
+        
+        // Check if we're on port 3000
+        if (window.location.port === '3000' || window.location.href.includes('localhost:3000')) {
+            // Replace port 3000 with 5173 and redirect
+            const newUrl = currentUrl.replace('localhost:3000', 'localhost:5173');
+            console.log('Redirecting to:', newUrl);
+            
+            // Show message and redirect
+            document.getElementById('message').innerHTML = `
+                <p>Redirecting from port 3000 to 5173...</p>
+                <p>New URL: ${newUrl}</p>
+            `;
+            
+            // Redirect after 1 second
+            setTimeout(() => {
+                window.location.href = newUrl;
+            }, 1000);
+        } else {
+            // We're already on the right port, redirect to auth callback
+            window.location.href = '/auth/callback' + window.location.hash;
+        }
+    </script>
+</head>
+<body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+    <h2>🔄 Redirecting...</h2>
+    <div id="message">
+        <p>Fixing port redirect issue...</p>
+    </div>
+    <p style="color: #666; font-size: 14px;">This should happen automatically in 1 second.</p>
+</body>
+</html>

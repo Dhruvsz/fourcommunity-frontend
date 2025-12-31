@@ -1,0 +1,30 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark gray background -->
+  <rect width="180" height="180" rx="40" fill="#3a3a3a"/>
+  
+  <!-- Square frame with connected corners -->
+  <g transform="translate(45, 45)">
+    <!-- Top left corner -->
+    <line x1="0" y1="20" x2="0" y2="0" stroke="white" stroke-width="10" stroke-linecap="round"/>
+    <line x1="0" y1="0" x2="20" y2="0" stroke="white" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="10" fill="white"/>
+    
+    <!-- Top right corner -->
+    <line x1="70" y1="0" x2="90" y2="0" stroke="white" stroke-width="10" stroke-linecap="round"/>
+    <line x1="90" y1="0" x2="90" y2="20" stroke="white" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="90" cy="0" r="10" fill="white"/>
+    
+    <!-- Bottom left corner -->
+    <line x1="0" y1="70" x2="0" y2="90" stroke="white" stroke-width="10" stroke-linecap="round"/>
+    <line x1="0" y1="90" x2="20" y2="90" stroke="white" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="0" cy="90" r="10" fill="white"/>
+    
+    <!-- Bottom right corner -->
+    <line x1="90" y1="70" x2="90" y2="90" stroke="white" stroke-width="10" stroke-linecap="round"/>
+    <line x1="70" y1="90" x2="90" y2="90" stroke="white" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="90" cy="90" r="10" fill="white"/>
+    
+    <!-- Number "4" in center -->
+    <text x="45" y="60" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="50" font-weight="bold">4</text>
+  </g>
+</svg>

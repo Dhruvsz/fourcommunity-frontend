@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <!-- Apple Touch Icon - Optimized for iOS with padding -->
+  
+  <!-- Background (transparent) -->
+  <rect width="180" height="180" fill="none"/>
+  
+  <!-- Icon with padding (20px on each side) -->
+  <g transform="translate(20, 20)">
+    <!-- Black shadow for depth -->
+    <g opacity="0.6">
+      <rect x="5" y="5" width="130" height="130" fill="none" stroke="#000000" stroke-width="18" rx="16"/>
+      <circle cx="25" cy="25" r="16" fill="#000000"/>
+      <circle cx="115" cy="25" r="16" fill="#000000"/>
+      <circle cx="25" cy="115" r="16" fill="#000000"/>
+      <circle cx="115" cy="115" r="16" fill="#000000"/>
+      <path d="M 90 45 L 90 70 L 110 70 L 110 85 L 90 85 L 90 110 L 70 110 L 70 85 L 40 85 L 40 68 L 70 45 Z M 70 58 L 55 73 L 70 73 Z" fill="#000000"/>
+    </g>
+    
+    <!-- White main icon -->
+    <rect x="8" y="8" width="124" height="124" fill="none" stroke="#FFFFFF" stroke-width="14" rx="14"/>
+    <circle cx="28" cy="28" r="13" fill="#FFFFFF"/>
+    <circle cx="112" cy="28" r="13" fill="#FFFFFF"/>
+    <circle cx="28" cy="112" r="13" fill="#FFFFFF"/>
+    <circle cx="112" cy="112" r="13" fill="#FFFFFF"/>
+    <path d="M 90 48 L 90 72 L 108 72 L 108 83 L 90 83 L 90 108 L 72 108 L 72 83 L 42 83 L 42 70 L 72 48 Z M 72 60 L 57 75 L 72 75 Z" fill="#FFFFFF"/>
+  </g>
+</svg>
