@@ -3,22 +3,37 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+// Safe admin Supabase initialization
+let adminSupabase: any = null;
+
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  console.warn('⚠️ Admin Supabase environment variables missing. Admin features disabled.');
+  
+  // Create a mock admin client
+  adminSupabase = {
+    from: () => ({
+      select: () => Promise.resolve({ data: [], error: new Error('Admin Supabase not configured') }),
+      insert: () => Promise.resolve({ data: null, error: new Error('Admin Supabase not configured') }),
+      update: () => Promise.resolve({ data: null, error: new Error('Admin Supabase not configured') }),
+      delete: () => Promise.resolve({ data: null, error: new Error('Admin Supabase not configured') })
+    })
+  };
+} else {
+  // Create a separate admin client for approval operations
+  adminSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    },
+    global: {
+      headers: {
+        'x-admin-action': 'true'
+      }
+    }
+  });
 }
 
-// Create a separate admin client for approval operations
-export const adminSupabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  },
-  global: {
-    headers: {
-      'x-admin-action': 'true'
-    }
-  }
-})
+export { adminSupabase };
 
 // Direct approval function that bypasses RLS
 export const directApproveSubmission = async (submissionId: string) => {

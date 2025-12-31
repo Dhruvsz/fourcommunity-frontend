@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Import critical pages immediately (above the fold)
 import Index from './pages/Index';
@@ -81,67 +82,69 @@ const App = () => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <BrowserRouter>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/communities" element={<Communities />} />
-              <Route path="/community/:id" element={<CommunityDetail />} />
-              <Route path="/join/success" element={<JoinSuccess />} />
-              <Route path="/submit" element={<SubmitGroup />} />
-              <Route path="/submit-group" element={<SubmitGroup />} />
-              <Route path="/submit/complete" element={<CompleteSubmissionPage />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/account" element={<Account />} />
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <BrowserRouter>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/communities" element={<Communities />} />
+                <Route path="/community/:id" element={<CommunityDetail />} />
+                <Route path="/join/success" element={<JoinSuccess />} />
+                <Route path="/submit" element={<SubmitGroup />} />
+                <Route path="/submit-group" element={<SubmitGroup />} />
+                <Route path="/submit/complete" element={<CompleteSubmissionPage />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/account" element={<Account />} />
 
-              {/* Dev tools - password protected */}
-              <Route path="/dev" element={<DevTools />} />
-              <Route path="/auth-test" element={<AuthTest />} />
-              <Route path="/auth-debug" element={<AuthDebug />} />
-              <Route path="/google-auth-test" element={<GoogleAuthTest />} />
-              <Route path="/email-test" element={<EmailTest />} />
-              <Route path="/auto-load-test" element={<AutoLoadTest />} />
-              <Route path="/bulletproof-test" element={<BulletproofTest />} />
-              <Route path="/form-test" element={<FormTest />} />
-              <Route path="/test-database" element={<TestDatabase />} />
-              <Route path="/onboarding-demo" element={<OnboardingNudgeDemo />} />
+                {/* Dev tools - password protected */}
+                <Route path="/dev" element={<DevTools />} />
+                <Route path="/auth-test" element={<AuthTest />} />
+                <Route path="/auth-debug" element={<AuthDebug />} />
+                <Route path="/google-auth-test" element={<GoogleAuthTest />} />
+                <Route path="/email-test" element={<EmailTest />} />
+                <Route path="/auto-load-test" element={<AutoLoadTest />} />
+                <Route path="/bulletproof-test" element={<BulletproofTest />} />
+                <Route path="/form-test" element={<FormTest />} />
+                <Route path="/test-database" element={<TestDatabase />} />
+                <Route path="/onboarding-demo" element={<OnboardingNudgeDemo />} />
 
-              {/* Admin routes */}
-              <Route path="/admin" element={<AdminLogin />} />
+                {/* Admin routes */}
+                <Route path="/admin" element={<AdminLogin />} />
 
-              <Route path="/admin/dashboard" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="submissions" element={<Submissions />} />
-                <Route path="live-communities" element={<CommunityManager />} />
-                <Route path="analytics" element={<Analytics />} />
-                <Route path="settings" element={<Settings />} />
-              </Route>
+                <Route path="/admin/dashboard" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="submissions" element={<Submissions />} />
+                  <Route path="live-communities" element={<CommunityManager />} />
+                  <Route path="analytics" element={<Analytics />} />
+                  <Route path="settings" element={<Settings />} />
+                </Route>
 
-              {/* Backward-compatible aliases */}
-              <Route path="/admin-login" element={<Navigate to="/admin" replace />} />
-              <Route path="/admin-dashboard" element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="/admin/submissions" element={<Navigate to="/admin/dashboard/submissions" replace />} />
-              <Route path="/admin/communities" element={<Navigate to="/admin/dashboard/live-communities" replace />} />
-              <Route path="/admin/analytics" element={<Navigate to="/admin/dashboard/analytics" replace />} />
-              <Route path="/admin/settings" element={<Navigate to="/admin/dashboard/settings" replace />} />
+                {/* Backward-compatible aliases */}
+                <Route path="/admin-login" element={<Navigate to="/admin" replace />} />
+                <Route path="/admin-dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="/admin/submissions" element={<Navigate to="/admin/dashboard/submissions" replace />} />
+                <Route path="/admin/communities" element={<Navigate to="/admin/dashboard/live-communities" replace />} />
+                <Route path="/admin/analytics" element={<Navigate to="/admin/dashboard/analytics" replace />} />
+                <Route path="/admin/settings" element={<Navigate to="/admin/dashboard/settings" replace />} />
 
-              {/* 404 route */}
-              <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+                {/* 404 route */}
+                <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 
