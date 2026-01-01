@@ -7,8 +7,8 @@ export const useAdminGuard = (redirectTo: string = '/') => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Wait for loading to complete
-    if (loading || profileLoading) return;
+    // Wait for auth loading to complete (profile loading is less critical now)
+    if (loading) return;
 
     // Redirect if not authenticated
     if (!isAuthenticated) {
@@ -16,17 +16,17 @@ export const useAdminGuard = (redirectTo: string = '/') => {
       return;
     }
 
-    // Redirect if not admin
+    // Redirect if not admin (email-based check)
     if (!isAdmin) {
       navigate(redirectTo);
       return;
     }
-  }, [isAuthenticated, isAdmin, loading, profileLoading, navigate, redirectTo]);
+  }, [isAuthenticated, isAdmin, loading, navigate, redirectTo]);
 
   return {
     isAuthenticated,
     isAdmin,
-    loading: loading || profileLoading,
+    loading: loading, // Profile loading is less critical for admin check now
     canAccess: isAuthenticated && isAdmin
   };
 };
@@ -37,7 +37,7 @@ export const useAdminCheck = () => {
   return {
     isAuthenticated,
     isAdmin,
-    loading: loading || profileLoading,
+    loading: loading, // Profile loading is less critical for admin check now
     canAccess: isAuthenticated && isAdmin
   };
 };

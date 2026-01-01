@@ -6,20 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, LogIn, User, Crown } from "lucide-react";
 
+// Admin email allowlist - must match AuthContext
+const ADMIN_EMAIL_ALLOWLIST = [
+  "dhruv@fourcommunity.com",
+  "dhruvchoudhary751@gmail.com"
+];
+
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { user, userProfile, loading, profileLoading, isAuthenticated, isAdmin } = useAuth();
 
   useEffect(() => {
     // If user is already authenticated and is admin, redirect to dashboard
-    if (isAuthenticated && isAdmin && !loading && !profileLoading) {
+    if (isAuthenticated && isAdmin && !loading) {
       console.log('✅ Admin user already authenticated, redirecting to dashboard');
       navigate("/admin/dashboard", { replace: true });
     }
-  }, [isAuthenticated, isAdmin, loading, profileLoading, navigate]);
+  }, [isAuthenticated, isAdmin, loading, navigate]);
 
-  // Show loading while checking authentication
-  if (loading || profileLoading) {
+  // Show loading while checking authentication (profile loading less critical now)
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-center">
@@ -44,7 +50,7 @@ const AdminLogin = () => {
           <CardContent className="space-y-4">
             <div className="text-center space-y-2">
               <p className="text-sm text-gray-400">
-                You are logged in but don't have administrator privileges.
+                Your email is not authorized for admin access.
               </p>
               
               <div className="bg-gray-800 p-3 rounded-lg text-xs text-gray-300">
@@ -53,8 +59,10 @@ const AdminLogin = () => {
                   <span className="font-medium">Current User:</span>
                 </div>
                 <div className="ml-5">
-                  <div>{userProfile?.email || user?.email}</div>
-                  <div className="text-gray-500">Role: User</div>
+                  <div>{user?.email}</div>
+                  <div className="text-gray-500">
+                    Status: {ADMIN_EMAIL_ALLOWLIST.includes(user?.email ?? "") ? 'Admin' : 'Not Authorized'}
+                  </div>
                 </div>
               </div>
             </div>
@@ -69,7 +77,7 @@ const AdminLogin = () => {
               </Button>
               
               <p className="text-xs text-gray-500 text-center">
-                Contact the administrator to request admin access.
+                Only specific email addresses have admin privileges.
               </p>
             </div>
           </CardContent>
@@ -94,7 +102,7 @@ const AdminLogin = () => {
               Please sign in to access the admin dashboard.
             </p>
             <p className="text-xs text-gray-500">
-              Only users with administrator privileges can access this area.
+              Only authorized email addresses can access this area.
             </p>
           </div>
           

@@ -14,6 +14,12 @@ interface UserProfile {
   updated_at: string;
 }
 
+// Admin email allowlist - only these emails have admin access
+const ADMIN_EMAIL_ALLOWLIST = [
+  "dhruv@fourcommunity.com",
+  "dhruvchoudhary751@gmail.com"
+];
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -53,7 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const clearError = () => setError(null);
 
-  // Fetch user profile data
+  // Fetch user profile data (simplified - no longer needed for admin check)
   const fetchUserProfile = async (userId: string) => {
     try {
       setProfileLoading(true);
@@ -74,14 +80,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) {
         console.error('❌ Error fetching user profile:', error);
-        // Set a default non-admin profile to prevent infinite loading
+        // Set a basic profile - admin status is now email-based, not DB-based
         setUserProfile({
           id: userId,
           email: '',
           full_name: null,
           avatar_url: null,
           provider: null,
-          is_admin: false,
+          is_admin: false, // This field is now ignored
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -93,14 +99,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return data;
     } catch (err) {
       console.error('❌ Exception fetching user profile:', err);
-      // Set a default non-admin profile to prevent infinite loading
+      // Set a basic profile - admin status is now email-based, not DB-based
       setUserProfile({
         id: userId,
         email: '',
         full_name: null,
         avatar_url: null,
         provider: null,
-        is_admin: false,
+        is_admin: false, // This field is now ignored
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
@@ -323,7 +329,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             timestamp: new Date().toISOString()
           }));
           
-          // Create or update user profile for all users (Google OAuth and email/password)
+          // Create or update user profile (simplified - admin status is email-based now)
           try {
             const provider = session.user.app_metadata?.provider || 'email';
             
@@ -348,6 +354,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                   avatar_url: session.user.user_metadata?.avatar_url || null,
                   provider: provider,
                   updated_at: new Date().toISOString()
+                  // Note: is_admin field is ignored - admin status is email-based
                 })
                 .eq('id', session.user.id);
 
@@ -369,7 +376,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
                     avatar_url: session.user.user_metadata?.avatar_url || null,
                     provider: provider,
-                    is_admin: false, // Default to false for new users
+                    is_admin: false, // This field is now ignored - admin status is email-based
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                   }
@@ -443,7 +450,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loading,
     profileLoading,
     isAuthenticated: !!user,
-    isAdmin: userProfile?.is_admin || false,
+    isAdmin: ADMIN_EMAIL_ALLOWLIST.includes(user?.email ?? ""),
     signInWithGoogle,
     signOut,
     refreshSession,
