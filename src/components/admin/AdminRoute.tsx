@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, AlertTriangle, LogIn, User } from 'lucide-react';
+import { Shield, AlertTriangle, User } from 'lucide-react';
 import AdminPasswordPrompt from './AdminPasswordPrompt';
 
 // Admin email allowlist - must match AuthContext
@@ -17,9 +17,9 @@ interface AdminRouteProps {
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const { user, userProfile, loading, profileLoading, isAuthenticated, isAdmin } = useAuth();
+  const { user, loading, isAuthenticated, isAdmin } = useAuth();
   const location = useLocation();
-  const [forceResolved, setForceResolved] = useState(false);
+  const [adminAuthResolved, setAdminAuthResolved] = useState(false);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
 
   // Check if admin password is verified in session
@@ -27,43 +27,39 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     return sessionStorage.getItem("admin_verified") === "true";
   };
 
-  // Safety timeout to prevent infinite loading (reduced since we don't need DB profile for admin check)
+  // Resolve admin auth state once loading is complete
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      console.log('⏰ AdminRoute: Force resolving after 5 seconds');
-      setForceResolved(true);
-    }, 5000);
-
-    return () => clearTimeout(timeout);
-  }, []);
-
-  // Check if we need to show password prompt
-  useEffect(() => {
-    if (isAuthenticated && isAdmin && !loading && !isPasswordVerified()) {
-      setShowPasswordPrompt(true);
+    if (!loading) {
+      setAdminAuthResolved(true);
+      
+      // If user is authenticated and is admin email but password not verified, show prompt
+      if (isAuthenticated && isAdmin && !isPasswordVerified()) {
+        setShowPasswordPrompt(true);
+      }
     }
-  }, [isAuthenticated, isAdmin, loading]);
+  }, [loading, isAuthenticated, isAdmin]);
 
-  // Show loading while checking authentication (profile loading is less critical now)
-  if (loading && !forceResolved) {
+  // SINGLE SOURCE OF TRUTH - AdminRoute controls ALL admin navigation
+  
+  // Show loading while auth is resolving
+  if (!adminAuthResolved) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-400">Verifying admin access...</p>
-          <p className="text-xs text-gray-600 mt-2">Checking email allowlist</p>
         </div>
       </div>
     );
   }
 
   // Redirect to login if not authenticated
-  if (!isAuthenticated || !user) {
+  if (!user || !isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Show access denied if user email is not in allowlist
-  if (!isAdmin || (forceResolved && !isAdmin)) {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-gray-900 border-gray-800">
@@ -87,13 +83,8 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
                 <div className="ml-5">
                   <div>{user.email}</div>
                   <div className="text-gray-500">
-                    Status: {ADMIN_EMAIL_ALLOWLIST.includes(user.email ?? "") ? 'Admin' : 'Not Authorized'}
+                    Status: Not Authorized
                   </div>
-                  {forceResolved && (
-                    <div className="text-yellow-500 text-xs mt-1">
-                      Auth check timed out
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -130,7 +121,7 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     );
   }
 
-  // User is authenticated, email is in allowlist, and password is verified - render the protected content
+  // All checks passed - render admin content
   return <>{children}</>;
 };
 

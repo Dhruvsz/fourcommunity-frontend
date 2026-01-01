@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
 export const useAdminGuard = (redirectTo: string = '/') => {
-  const { isAuthenticated, isAdmin, loading, profileLoading } = useAuth();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Wait for auth loading to complete (profile loading is less critical now)
+    // Wait for auth loading to complete
     if (loading) return;
 
     // Redirect if not authenticated
@@ -26,18 +26,18 @@ export const useAdminGuard = (redirectTo: string = '/') => {
   return {
     isAuthenticated,
     isAdmin,
-    loading: loading, // Profile loading is less critical for admin check now
+    loading,
     canAccess: isAuthenticated && isAdmin
   };
 };
 
 export const useAdminCheck = () => {
-  const { isAuthenticated, isAdmin, loading, profileLoading } = useAuth();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
   
   return {
     isAuthenticated,
     isAdmin,
-    loading: loading, // Profile loading is less critical for admin check now
+    loading,
     canAccess: isAuthenticated && isAdmin
   };
 };

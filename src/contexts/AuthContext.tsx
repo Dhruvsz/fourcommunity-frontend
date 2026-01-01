@@ -25,7 +25,6 @@ interface AuthContextType {
   session: Session | null;
   userProfile: UserProfile | null;
   loading: boolean;
-  profileLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
@@ -54,33 +53,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => setError(null);
 
-  // Fetch user profile data (simplified - no longer needed for admin check)
+  // Fetch user profile data (simplified - admin status is email-based)
   const fetchUserProfile = async (userId: string) => {
     try {
-      setProfileLoading(true);
       console.log('🔍 Fetching user profile for:', userId);
       
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
-      );
-      
-      const fetchPromise = supabase
+      const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single();
-      
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
       if (error) {
         console.error('❌ Error fetching user profile:', error);
-        // Set a basic profile - admin status is now email-based, not DB-based
+        // Set a basic profile - admin status is email-based, not DB-based
         setUserProfile({
           id: userId,
           email: '',
@@ -99,7 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return data;
     } catch (err) {
       console.error('❌ Exception fetching user profile:', err);
-      // Set a basic profile - admin status is now email-based, not DB-based
+      // Set a basic profile - admin status is email-based, not DB-based
       setUserProfile({
         id: userId,
         email: '',
@@ -111,8 +101,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         updated_at: new Date().toISOString()
       });
       return null;
-    } finally {
-      setProfileLoading(false);
     }
   };
 
@@ -248,21 +236,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     let mounted = true;
     
-    // Add timeout to prevent infinite loading
+    // Simple timeout to prevent infinite loading
     const loadingTimeout = setTimeout(() => {
       if (mounted) {
-        console.log('⏰ Loading timeout - forcing loading to false');
+        console.log('⏰ Auth loading timeout - setting loading to false');
         setLoading(false);
       }
     }, 3000);
-
-    // Add timeout to prevent infinite profile loading
-    const profileTimeout = setTimeout(() => {
-      if (mounted) {
-        console.log('⏰ Profile loading timeout - forcing profileLoading to false');
-        setProfileLoading(false);
-      }
-    }, 8000);
 
     // Get initial session
     const getInitialSession = async () => {
@@ -287,7 +267,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.error('❌ Session initialization error:', err);
       } finally {
         if (mounted) {
-          console.log('🔄 Setting loading to false');
           setLoading(false);
         }
       }
@@ -309,18 +288,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           // Fetch user profile data
           await fetchUserProfile(session.user.id);
-          
-          // Check if this is a new user (just signed up) or existing user (logging in)
-          const isNewUser = session.user.created_at && 
-            new Date(session.user.created_at).getTime() > Date.now() - 60000; // Within last minute
-          
-          if (isNewUser) {
-            // Set flag for new signups to trigger onboarding nudge
-            localStorage.setItem('justSignedUp', 'true');
-          } else {
-            // Set flag for existing users logging in to trigger onboarding nudge
-            localStorage.setItem('justLoggedIn', 'true');
-          }
           
           // Store user data
           localStorage.setItem('user_data', JSON.stringify({
@@ -441,7 +408,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => {
       mounted = false;
       clearTimeout(loadingTimeout);
-      clearTimeout(profileTimeout);
       subscription.unsubscribe();
     };
   }, []);
@@ -451,7 +417,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     session,
     userProfile,
     loading,
-    profileLoading,
     isAuthenticated: !!user,
     isAdmin: ADMIN_EMAIL_ALLOWLIST.includes(user?.email ?? ""),
     signInWithGoogle,
