@@ -29,9 +29,12 @@ const AuthDebug = lazy(() => import('@/pages/AuthDebug'));
 const AdminDashboard = lazy(() => import('./pages/Admin/Dashboard'));
 const AdminLogin = lazy(() => import('./pages/Admin/Login'));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
-const Submissions = lazy(() => import('./pages/Admin/Submissions'));
+const AdminCommunities = lazy(() => import('./pages/Admin/Communities'));
+const AdminCommunityDetail = lazy(() => import('./pages/Admin/CommunityDetail'));
 const CommunityManager = lazy(() => import('./pages/Admin/CommunityManager'));
 const Analytics = lazy(() => import('./pages/Admin/Analytics'));
+const AdminPayments = lazy(() => import('./pages/Admin/Payments'));
+const AdminMembers = lazy(() => import('./pages/Admin/Members'));
 const Settings = lazy(() => import('./pages/Admin/Settings'));
 
 // Lazy load test pages (dev only)
@@ -127,11 +130,19 @@ const App = () => {
                   </AdminRoute>
                 }>
                   <Route index element={<AdminDashboard />} />
-                  <Route path="submissions" element={<Submissions />} />
-                  <Route path="live-communities" element={<CommunityManager />} />
+                  <Route path="communities" element={<AdminCommunities />} />
+                  <Route path="payments" element={<AdminPayments />} />
+                  <Route path="members" element={<AdminMembers />} />
                   <Route path="analytics" element={<Analytics />} />
                   <Route path="settings" element={<Settings />} />
                 </Route>
+
+                {/* Individual community detail route */}
+                <Route path="/admin/communities/:id" element={
+                  <AdminRoute>
+                    <AdminCommunityDetail />
+                  </AdminRoute>
+                } />
 
                 {/* Backward-compatible aliases - also protected */}
                 <Route path="/admin-login" element={<Navigate to="/admin" replace />} />
@@ -142,12 +153,17 @@ const App = () => {
                 } />
                 <Route path="/admin/submissions" element={
                   <AdminRoute>
-                    <Navigate to="/admin/dashboard/submissions" replace />
+                    <Navigate to="/admin/dashboard/communities" replace />
                   </AdminRoute>
                 } />
                 <Route path="/admin/communities" element={
                   <AdminRoute>
-                    <Navigate to="/admin/dashboard/live-communities" replace />
+                    <Navigate to="/admin/dashboard/communities" replace />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/live-communities" element={
+                  <AdminRoute>
+                    <Navigate to="/admin/dashboard/communities" replace />
                   </AdminRoute>
                 } />
                 <Route path="/admin/analytics" element={
