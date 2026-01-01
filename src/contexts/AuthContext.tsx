@@ -3,11 +3,25 @@ import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
+interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  provider: string | null;
+  is_admin: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  userProfile: UserProfile | null;
   loading: boolean;
+  profileLoading: boolean;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
@@ -32,10 +46,40 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => setError(null);
+
+  // Fetch user profile data
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      setProfileLoading(true);
+      console.log('🔍 Fetching user profile for:', userId);
+      
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('❌ Error fetching user profile:', error);
+        return null;
+      }
+
+      console.log('✅ User profile fetched:', data);
+      setUserProfile(data);
+      return data;
+    } catch (err) {
+      console.error('❌ Exception fetching user profile:', err);
+      return null;
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const signInWithGoogle = async () => {
     try {
@@ -133,6 +177,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Always clear state regardless of API response
       setUser(null);
       setSession(null);
+      setUserProfile(null);
       setError(null);
       
       // Clear stored data
@@ -150,6 +195,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Force sign out even if API fails
       setUser(null);
       setSession(null);
+      setUserProfile(null);
       setError(null);
       localStorage.removeItem('user_data');
       localStorage.removeItem('oauth_state');
@@ -187,6 +233,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           console.log('✅ Initial session found:', session.user.email);
           setSession(session);
           setUser(session.user);
+          // Fetch user profile for initial session
+          await fetchUserProfile(session.user.id);
         } else {
           console.log('ℹ️ No initial session found');
         }
@@ -213,6 +261,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setSession(session);
           setUser(session.user);
           setError(null);
+          
+          // Fetch user profile data
+          await fetchUserProfile(session.user.id);
           
           // Check if this is a new user (just signed up) or existing user (logging in)
           const isNewUser = session.user.created_at && 
@@ -267,6 +318,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 console.error('Profile update error:', updateError);
               } else {
                 console.log(`User profile updated for ${provider} user`);
+                // Refetch profile after update
+                await fetchUserProfile(session.user.id);
               }
             } else {
               // Profile doesn't exist, create new one
@@ -279,6 +332,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
                     avatar_url: session.user.user_metadata?.avatar_url || null,
                     provider: provider,
+                    is_admin: false, // Default to false for new users
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                   }
@@ -288,6 +342,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 console.error('Profile insert error:', insertError);
               } else {
                 console.log(`User profile created for ${provider} user`);
+                // Fetch the newly created profile
+                await fetchUserProfile(session.user.id);
               }
             }
           } catch (err) {
@@ -303,6 +359,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           console.log('🚪 User signed out');
           setSession(null);
           setUser(null);
+          setUserProfile(null);
           setError(null);
           
           // Clear stored data
@@ -344,8 +401,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     session,
+    userProfile,
     loading,
+    profileLoading,
     isAuthenticated: !!user,
+    isAdmin: userProfile?.is_admin || false,
     signInWithGoogle,
     signOut,
     refreshSession,

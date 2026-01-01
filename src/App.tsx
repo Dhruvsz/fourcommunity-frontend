@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import AdminRoute from '@/components/admin/AdminRoute';
 
 // Import critical pages immediately (above the fold)
 import Index from './pages/Index';
@@ -117,10 +118,14 @@ const App = () => {
                 <Route path="/test-database" element={<TestDatabase />} />
                 <Route path="/onboarding-demo" element={<OnboardingNudgeDemo />} />
 
-                {/* Admin routes */}
+                {/* Admin routes - protected by AdminRoute */}
                 <Route path="/admin" element={<AdminLogin />} />
 
-                <Route path="/admin/dashboard" element={<AdminLayout />}>
+                <Route path="/admin/dashboard" element={
+                  <AdminRoute>
+                    <AdminLayout />
+                  </AdminRoute>
+                }>
                   <Route index element={<AdminDashboard />} />
                   <Route path="submissions" element={<Submissions />} />
                   <Route path="live-communities" element={<CommunityManager />} />
@@ -128,13 +133,33 @@ const App = () => {
                   <Route path="settings" element={<Settings />} />
                 </Route>
 
-                {/* Backward-compatible aliases */}
+                {/* Backward-compatible aliases - also protected */}
                 <Route path="/admin-login" element={<Navigate to="/admin" replace />} />
-                <Route path="/admin-dashboard" element={<Navigate to="/admin/dashboard" replace />} />
-                <Route path="/admin/submissions" element={<Navigate to="/admin/dashboard/submissions" replace />} />
-                <Route path="/admin/communities" element={<Navigate to="/admin/dashboard/live-communities" replace />} />
-                <Route path="/admin/analytics" element={<Navigate to="/admin/dashboard/analytics" replace />} />
-                <Route path="/admin/settings" element={<Navigate to="/admin/dashboard/settings" replace />} />
+                <Route path="/admin-dashboard" element={
+                  <AdminRoute>
+                    <Navigate to="/admin/dashboard" replace />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/submissions" element={
+                  <AdminRoute>
+                    <Navigate to="/admin/dashboard/submissions" replace />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/communities" element={
+                  <AdminRoute>
+                    <Navigate to="/admin/dashboard/live-communities" replace />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/analytics" element={
+                  <AdminRoute>
+                    <Navigate to="/admin/dashboard/analytics" replace />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/settings" element={
+                  <AdminRoute>
+                    <Navigate to="/admin/dashboard/settings" replace />
+                  </AdminRoute>
+                } />
 
                 {/* 404 route */}
                 <Route path="*" element={<NotFound />} />
