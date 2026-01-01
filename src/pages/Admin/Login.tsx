@@ -1,10 +1,11 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, LogIn, User, Crown } from "lucide-react";
+import AdminPasswordPrompt from "@/components/admin/AdminPasswordPrompt";
 
 // Admin email allowlist - must match AuthContext
 const ADMIN_EMAIL_ALLOWLIST = [
@@ -15,12 +16,23 @@ const ADMIN_EMAIL_ALLOWLIST = [
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { user, userProfile, loading, profileLoading, isAuthenticated, isAdmin } = useAuth();
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+
+  // Check if admin password is verified in session
+  const isPasswordVerified = () => {
+    return sessionStorage.getItem("admin_verified") === "true";
+  };
 
   useEffect(() => {
-    // If user is already authenticated and is admin, redirect to dashboard
+    // If user is already authenticated and is admin, check password verification
     if (isAuthenticated && isAdmin && !loading) {
-      console.log('✅ Admin user already authenticated, redirecting to dashboard');
-      navigate("/admin/dashboard", { replace: true });
+      if (isPasswordVerified()) {
+        console.log('✅ Admin user already authenticated and verified, redirecting to dashboard');
+        navigate("/admin/dashboard", { replace: true });
+      } else {
+        console.log('🔐 Admin user authenticated but needs password verification');
+        setShowPasswordPrompt(true);
+      }
     }
   }, [isAuthenticated, isAdmin, loading, navigate]);
 
@@ -33,6 +45,19 @@ const AdminLogin = () => {
           <p className="text-gray-400">Checking admin access...</p>
         </div>
       </div>
+    );
+  }
+
+  // Show password prompt if user is authenticated admin but not password verified
+  if (isAuthenticated && isAdmin && showPasswordPrompt) {
+    return (
+      <AdminPasswordPrompt
+        userEmail={user?.email || ''}
+        onPasswordVerified={() => {
+          setShowPasswordPrompt(false);
+          navigate("/admin/dashboard", { replace: true });
+        }}
+      />
     );
   }
 
@@ -102,7 +127,7 @@ const AdminLogin = () => {
               Please sign in to access the admin dashboard.
             </p>
             <p className="text-xs text-gray-500">
-              Only authorized email addresses can access this area.
+              Requires authorized email and admin password.
             </p>
           </div>
           

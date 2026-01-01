@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, AlertTriangle, LogIn, User } from 'lucide-react';
+import AdminPasswordPrompt from './AdminPasswordPrompt';
 
 // Admin email allowlist - must match AuthContext
 const ADMIN_EMAIL_ALLOWLIST = [
@@ -19,6 +20,12 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const { user, userProfile, loading, profileLoading, isAuthenticated, isAdmin } = useAuth();
   const location = useLocation();
   const [forceResolved, setForceResolved] = useState(false);
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+
+  // Check if admin password is verified in session
+  const isPasswordVerified = () => {
+    return sessionStorage.getItem("admin_verified") === "true";
+  };
 
   // Safety timeout to prevent infinite loading (reduced since we don't need DB profile for admin check)
   useEffect(() => {
@@ -29,6 +36,13 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
 
     return () => clearTimeout(timeout);
   }, []);
+
+  // Check if we need to show password prompt
+  useEffect(() => {
+    if (isAuthenticated && isAdmin && !loading && !isPasswordVerified()) {
+      setShowPasswordPrompt(true);
+    }
+  }, [isAuthenticated, isAdmin, loading]);
 
   // Show loading while checking authentication (profile loading is less critical now)
   if (loading && !forceResolved) {
@@ -104,7 +118,19 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     );
   }
 
-  // User is authenticated and email is in allowlist - render the protected content
+  // Show password prompt if email is authorized but password not verified
+  if (showPasswordPrompt) {
+    return (
+      <AdminPasswordPrompt
+        userEmail={user.email || ''}
+        onPasswordVerified={() => {
+          setShowPasswordPrompt(false);
+        }}
+      />
+    );
+  }
+
+  // User is authenticated, email is in allowlist, and password is verified - render the protected content
   return <>{children}</>;
 };
 

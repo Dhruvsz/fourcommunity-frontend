@@ -215,9 +215,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUserProfile(null);
       setError(null);
       
-      // Clear stored data
+      // Clear stored data including admin verification
       localStorage.removeItem('user_data');
       localStorage.removeItem('oauth_state');
+      sessionStorage.removeItem('admin_verified'); // Clear admin password verification
       
       toast.success('Signed out successfully');
       
@@ -234,6 +235,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(null);
       localStorage.removeItem('user_data');
       localStorage.removeItem('oauth_state');
+      sessionStorage.removeItem('admin_verified'); // Clear admin password verification
       
       toast.success('Signed out (forced)');
       window.location.href = '/';
@@ -406,9 +408,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUserProfile(null);
           setError(null);
           
-          // Clear stored data
+          // Clear stored data including admin verification
           localStorage.removeItem('user_data');
           localStorage.removeItem('oauth_state');
+          sessionStorage.removeItem('admin_verified'); // Clear admin password verification
           
           toast.success('Signed out successfully');
         }
