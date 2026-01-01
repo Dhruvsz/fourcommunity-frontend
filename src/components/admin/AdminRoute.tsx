@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,14 +12,26 @@ interface AdminRouteProps {
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const { user, userProfile, loading, profileLoading, isAuthenticated, isAdmin } = useAuth();
   const location = useLocation();
+  const [forceResolved, setForceResolved] = useState(false);
 
-  // Show loading while checking authentication and profile
-  if (loading || profileLoading) {
+  // Safety timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      console.log('⏰ AdminRoute: Force resolving after 10 seconds');
+      setForceResolved(true);
+    }, 10000);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  // Show loading while checking authentication and profile (with timeout)
+  if ((loading || profileLoading) && !forceResolved) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-400">Verifying admin access...</p>
+          <p className="text-xs text-gray-600 mt-2">This should only take a moment</p>
         </div>
       </div>
     );
@@ -31,7 +43,8 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   }
 
   // Show access denied if user is authenticated but not admin
-  if (!isAdmin) {
+  // This includes cases where profile fetch failed (userProfile is null or isAdmin is false)
+  if (!isAdmin || (forceResolved && !isAdmin)) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-gray-900 border-gray-800">
@@ -57,6 +70,11 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
                   <div className="text-gray-500">
                     Role: {isAdmin ? 'Administrator' : 'User'}
                   </div>
+                  {forceResolved && (
+                    <div className="text-yellow-500 text-xs mt-1">
+                      Profile verification timed out
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

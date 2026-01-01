@@ -59,14 +59,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setProfileLoading(true);
       console.log('🔍 Fetching user profile for:', userId);
       
-      const { data, error } = await supabase
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      );
+      
+      const fetchPromise = supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single();
+      
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
 
       if (error) {
         console.error('❌ Error fetching user profile:', error);
+        // Set a default non-admin profile to prevent infinite loading
+        setUserProfile({
+          id: userId,
+          email: '',
+          full_name: null,
+          avatar_url: null,
+          provider: null,
+          is_admin: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
         return null;
       }
 
@@ -75,6 +93,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return data;
     } catch (err) {
       console.error('❌ Exception fetching user profile:', err);
+      // Set a default non-admin profile to prevent infinite loading
+      setUserProfile({
+        id: userId,
+        email: '',
+        full_name: null,
+        avatar_url: null,
+        provider: null,
+        is_admin: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
       return null;
     } finally {
       setProfileLoading(false);
@@ -218,6 +247,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setLoading(false);
       }
     }, 3000);
+
+    // Add timeout to prevent infinite profile loading
+    const profileTimeout = setTimeout(() => {
+      if (mounted) {
+        console.log('⏰ Profile loading timeout - forcing profileLoading to false');
+        setProfileLoading(false);
+      }
+    }, 8000);
 
     // Get initial session
     const getInitialSession = async () => {
@@ -394,6 +431,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => {
       mounted = false;
       clearTimeout(loadingTimeout);
+      clearTimeout(profileTimeout);
       subscription.unsubscribe();
     };
   }, []);
