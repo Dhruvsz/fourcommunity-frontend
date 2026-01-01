@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
-import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, 
@@ -18,10 +18,10 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { AdminGuard } from "@/components/admin/AdminGuard";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AdminLayout = () => {
-  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const location = useLocation();
   const { toast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -38,16 +38,21 @@ const AdminLayout = () => {
     }
   }, [isMobile]);
 
-  const handleLogout = () => {
-    // Clear all authentication data
-    localStorage.removeItem("adminAuth");
-    localStorage.removeItem("adminAuthenticated");
-    
-    toast({
-      title: "🔐 Logged out",
-      description: "You have been successfully logged out. Stay secure!",
-    });
-    navigate("/admin");
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "🔐 Logged out",
+        description: "You have been successfully logged out. Stay secure!",
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Logout Error",
+        description: "There was an issue logging out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const toggleSidebar = () => {
@@ -67,15 +72,13 @@ const AdminLayout = () => {
 
   const menuItems = [
     { icon: <LayoutDashboard className="h-5 w-5" />, name: "Dashboard", path: "/admin/dashboard" },
-    { icon: <ClipboardList className="h-5 w-5" />, name: "Submissions", path: "/admin/dashboard/submissions" },
-    { icon: <Globe className="h-5 w-5" />, name: "Live Communities", path: "/admin/dashboard/live-communities" },
+    { icon: <ClipboardList className="h-5 w-5" />, name: "Communities", path: "/admin/dashboard/communities" },
     { icon: <Users className="h-5 w-5" />, name: "Analytics", path: "/admin/dashboard/analytics" },
     { icon: <Settings className="h-5 w-5" />, name: "Settings", path: "/admin/dashboard/settings" },
   ];
 
   return (
-    <AdminGuard>
-      <div className="min-h-screen bg-[#0D0D0D] flex w-full" ref={containerRef}>
+    <div className="min-h-screen bg-[#0D0D0D] flex w-full" ref={containerRef}>
       {/* Mobile sidebar toggle */}
       {isMobile && (
         <div className="fixed top-4 left-4 z-50">
@@ -105,7 +108,7 @@ const AdminLayout = () => {
             <div className="p-6 border-b border-gray-800">
               <div className="flex items-center mb-4">
                 <div className="relative">
-                  <div className="text-xl font-semibold text-white">GroupFinder</div>
+                  <div className="text-xl font-semibold text-white">FourCommunity</div>
                   <motion.div
                     animate={{ 
                       opacity: [0.4, 0.6, 0.4],
@@ -207,7 +210,7 @@ const AdminLayout = () => {
         <div className="flex-1 p-4 lg:p-8 overflow-auto pt-16 lg:pt-8 bg-gradient-to-b from-[#111111] to-[#0D0D0D]">
           <div className="mb-6 flex items-center">
             <h1 className="text-2xl font-semibold text-white">
-              {location.pathname.includes('/dashboard/submissions') ? 'Submissions' : 
+              {location.pathname.includes('/dashboard/communities') ? 'Communities' : 
                location.pathname.includes('/dashboard/analytics') ? 'Analytics' :
                location.pathname.includes('/dashboard/settings') ? 'Settings' : 'Dashboard'}
             </h1>
@@ -221,7 +224,6 @@ const AdminLayout = () => {
         </div>
       </div>
     </div>
-    </AdminGuard>
   );
 };
 
