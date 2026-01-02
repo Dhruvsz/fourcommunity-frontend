@@ -1,9 +1,59 @@
-/* SF Pro Display Font */
-@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700;800;900&display=swap');
+/* Inter Font - Professional Admin Dashboard */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================
+   ADMIN DASHBOARD TYPOGRAPHY SYSTEM
+   ============================================ */
+
+/* Professional admin dashboard font hierarchy */
+.admin-dashboard {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Dashboard Numbers (Most Important) */
+.admin-metric-number {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 2rem; /* 32px */
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #0F172A;
+}
+
+@media (min-width: 768px) {
+  .admin-metric-number {
+    font-size: 2.25rem; /* 36px */
+  }
+}
+
+/* Section Titles */
+.admin-section-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 1.125rem; /* 18px */
+  color: #0F172A;
+}
+
+/* Card Labels */
+.admin-card-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.8125rem; /* 13px */
+  color: #6B7280;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Secondary Text */
+.admin-secondary-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  color: #94A3B8;
+}
 
 /* ============================================
    iOS SAFE AREA SUPPORT (Status Bar Integration)

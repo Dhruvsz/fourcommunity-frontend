@@ -14,14 +14,14 @@ import { mockStats, formatCurrency } from '@/lib/mockAdminData';
 
 const AdminDashboard = () => {
   return (
-    <div className="space-y-6">
+    <div className="admin-dashboard space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Platform overview and key metrics</p>
+          <h1 className="admin-section-title mb-2">Dashboard</h1>
+          <p className="admin-secondary-text">Platform overview and key metrics</p>
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="admin-secondary-text text-sm">
           Last updated: {new Date().toLocaleString('en-IN')}
         </div>
       </div>
@@ -92,58 +92,58 @@ const AdminDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="admin-section-title mb-6">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-            <Clock className="h-5 w-5 text-yellow-600 mr-3" />
+          <button className="flex items-center p-4 border border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-all text-left group">
+            <Clock className="h-5 w-5 text-amber-600 mr-4 flex-shrink-0" />
             <div>
-              <div className="font-medium text-gray-900">Review Pending</div>
-              <div className="text-sm text-gray-500">{mockStats.pendingCommunities} communities</div>
+              <div className="font-medium text-gray-900 group-hover:text-gray-700">Review Pending</div>
+              <div className="admin-secondary-text text-sm mt-1">{mockStats.pendingCommunities} communities</div>
             </div>
           </button>
           
-          <button className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-            <Users className="h-5 w-5 text-blue-600 mr-3" />
+          <button className="flex items-center p-4 border border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-all text-left group">
+            <Users className="h-5 w-5 text-blue-600 mr-4 flex-shrink-0" />
             <div>
-              <div className="font-medium text-gray-900">Manage Members</div>
-              <div className="text-sm text-gray-500">Access control</div>
+              <div className="font-medium text-gray-900 group-hover:text-gray-700">Manage Members</div>
+              <div className="admin-secondary-text text-sm mt-1">Access control</div>
             </div>
           </button>
           
-          <button className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-            <IndianRupee className="h-5 w-5 text-green-600 mr-3" />
+          <button className="flex items-center p-4 border border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-all text-left group">
+            <IndianRupee className="h-5 w-5 text-green-600 mr-4 flex-shrink-0" />
             <div>
-              <div className="font-medium text-gray-900">View Payments</div>
-              <div className="text-sm text-gray-500">Transaction history</div>
+              <div className="font-medium text-gray-900 group-hover:text-gray-700">View Payments</div>
+              <div className="admin-secondary-text text-sm mt-1">Transaction history</div>
             </div>
           </button>
           
-          <button className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-            <Plus className="h-5 w-5 text-purple-600 mr-3" />
+          <button className="flex items-center p-4 border border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-all text-left group">
+            <Plus className="h-5 w-5 text-purple-600 mr-4 flex-shrink-0" />
             <div>
-              <div className="font-medium text-gray-900">System Settings</div>
-              <div className="text-sm text-gray-500">Configure platform</div>
+              <div className="font-medium text-gray-900 group-hover:text-gray-700">System Settings</div>
+              <div className="admin-secondary-text text-sm mt-1">Configure platform</div>
             </div>
           </button>
         </div>
       </div>
 
-      {/* Status Overview */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Platform Health</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Platform Health */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="admin-section-title mb-6">Platform Health</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">98.5%</div>
-            <div className="text-sm text-gray-600">System Uptime</div>
+            <div className="admin-metric-number text-green-600 mb-2">98.5%</div>
+            <div className="admin-card-label">System Uptime</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">2.3s</div>
-            <div className="text-sm text-gray-600">Avg Response Time</div>
+            <div className="admin-metric-number text-blue-600 mb-2">2.3s</div>
+            <div className="admin-card-label">Avg Response Time</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">99.2%</div>
-            <div className="text-sm text-gray-600">Payment Success Rate</div>
+            <div className="admin-metric-number text-purple-600 mb-2">99.2%</div>
+            <div className="admin-card-label">Payment Success Rate</div>
           </div>
         </div>
       </div>

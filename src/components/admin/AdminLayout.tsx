@@ -78,7 +78,7 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] flex w-full" ref={containerRef}>
+    <div className="min-h-screen bg-gray-50 flex w-full" ref={containerRef}>
       {/* Mobile sidebar toggle */}
       {isMobile && (
         <div className="fixed top-4 left-4 z-50">
@@ -86,7 +86,7 @@ const AdminLayout = () => {
             onClick={toggleSidebar}
             variant="outline"
             size="icon"
-            className="bg-gray-900 border-gray-800 hover:bg-gray-800 hover:border-gray-700"
+            className="bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300"
           >
             {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
           </Button>
@@ -103,39 +103,27 @@ const AdminLayout = () => {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className={`${
               isMobile ? "fixed" : "sticky"
-            } top-0 left-0 z-40 h-screen w-64 bg-[#111111] border-r border-gray-800 shadow-lg backdrop-blur-lg bg-opacity-95 flex flex-col`}
+            } top-0 left-0 z-40 h-screen w-64 bg-white border-r border-gray-200 shadow-sm flex flex-col`}
           >
-            <div className="p-6 border-b border-gray-800">
+            <div className="p-6 border-b border-gray-200">
               <div className="flex items-center mb-4">
                 <div className="relative">
-                  <div className="text-xl font-semibold text-white">FourCommunity</div>
-                  <motion.div
-                    animate={{ 
-                      opacity: [0.4, 0.6, 0.4],
-                    }}
-                    transition={{ 
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                    className="absolute -inset-2 rounded-full bg-primary/20 blur-md -z-10"
-                  />
+                  <div className="text-xl font-semibold text-gray-900">FourCommunity</div>
                 </div>
               </div>
               <div className="flex items-center">
-                <div className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse" />
-                <p className="text-sm text-gray-400">Admin Panel</p>
+                <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
+                <p className="admin-secondary-text text-sm">Admin Panel</p>
               </div>
             </div>
             
             <div className="flex-1 overflow-y-auto py-4 px-3">
-              {/* Search */}
               <form onSubmit={handleSearch} className="px-2 mb-4">
                 <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Search..."
-                    className="pl-8 bg-[#1A1A1A] border-gray-800 text-gray-300 focus-visible:ring-primary/50"
+                    className="pl-9 bg-gray-50 border-gray-200 text-gray-900 focus-visible:ring-blue-500/20 focus-visible:border-blue-500"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -144,7 +132,7 @@ const AdminLayout = () => {
               
               {/* Navigation */}
               <div className="my-2 px-3">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Menu</h3>
+                <h3 className="admin-card-label uppercase tracking-wider">Menu</h3>
               </div>
               <ul className="space-y-1">
                 {menuItems.map((item) => (
@@ -156,10 +144,10 @@ const AdminLayout = () => {
                     <NavLink
                       to={item.path}
                       className={({ isActive }) => `
-                        flex items-center px-4 py-3 rounded-lg transition-all duration-300
+                        flex items-center px-4 py-3 rounded-lg transition-all duration-200
                         ${isActive 
-                          ? 'bg-[#1A1A1A] text-primary border-l-2 border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]' 
-                          : 'text-gray-400 hover:bg-[#1A1A1A]/70 hover:text-gray-200'}
+                          ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600' 
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
                       `}
                       onClick={() => {
                         if (isMobile) {
@@ -168,18 +156,18 @@ const AdminLayout = () => {
                       }}
                     >
                       <span className="mr-3">{item.icon}</span>
-                      <span>{item.name}</span>
-                      <ChevronRight size={16} className="ml-auto opacity-70" />
+                      <span className="font-medium">{item.name}</span>
+                      <ChevronRight size={16} className="ml-auto opacity-40" />
                     </NavLink>
                   </motion.li>
                 ))}
               </ul>
             </div>
             
-            <div className="border-t border-gray-800 p-4">
+            <div className="border-t border-gray-200 p-4">
               <Button
                 variant="ghost"
-                className="w-full justify-start text-gray-400 hover:bg-[#1A1A1A]/80 hover:text-white"
+                className="w-full justify-start text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 onClick={handleLogout}
               >
                 <LogOut className="mr-3 h-5 w-5" />
@@ -207,15 +195,15 @@ const AdminLayout = () => {
         </AnimatePresence>
         
         {/* Content area */}
-        <div className="flex-1 p-4 lg:p-8 overflow-auto pt-16 lg:pt-8 bg-gradient-to-b from-[#111111] to-[#0D0D0D]">
-          <div className="mb-6 flex items-center">
-            <h1 className="text-2xl font-semibold text-white">
+        <div className="flex-1 p-4 lg:p-8 overflow-auto pt-16 lg:pt-8 bg-gray-50">
+          <div className="mb-8 flex items-center">
+            <h1 className="admin-section-title">
               {location.pathname.includes('/dashboard/communities') ? 'Communities' : 
                location.pathname.includes('/dashboard/analytics') ? 'Analytics' :
                location.pathname.includes('/dashboard/settings') ? 'Settings' : 'Dashboard'}
             </h1>
-            <div className="h-1 w-1 bg-gray-500 rounded-full mx-3" />
-            <div className="text-sm text-gray-400">
+            <div className="h-1 w-1 bg-gray-400 rounded-full mx-3" />
+            <div className="admin-secondary-text text-sm">
               Admin Panel
             </div>
           </div>
