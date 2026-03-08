@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Debug Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+        .button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .result {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid;
+        }
+        .result.success {
+            background: #064e3b;
+            border-color: #10b981;
+        }
+        .result.error {
+            background: #7f1d1d;
+            border-color: #ef4444;
+        }
+        .result.pending {
+            background: #1e3a8a;
+            border-color: #3b82f6;
+        }
+        pre {
+            background: #000;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .timestamp {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+        .stat {
+            text-align: center;
+            padding: 16px;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔬 Community Submission Debug Test</h1>
+        <p style="color: #999; margin-bottom: 24px;">
+            This page will test the complete submission flow and capture all errors
+        </p>
+        <button id="runTest" class="button">▶️ Run Full Debug Test</button>
+        <div id="instructions" class="card" style="background: #2d1b00; border-color: #f59e0b;">
+            <div style="color: #fbbf24; font-weight: 600; margin-bottom: 8px;">📝 Instructions:</div>
+            <ol style="color: #fde68a; font-size: 14px; line-height: 1.6;">
+                <li>Click "Run Full Debug Test" button above</li>
+                <li>Open browser DevTools (F12) and go to Console tab</li>
+                <li>Open Network tab and filter by "community_subs"</li>
+                <li>Watch the test results appear below</li>
+                <li>Check console for detailed logs</li>
+                <li>If insert fails, error details will show in red boxes</li>
+            </ol>
+        </div>
+    </div>
+
+    <div id="results"></div>
+    <div id="summary"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://iqxqxqxqxqxqxqxq.supabase.co'; // Will be replaced by actual env
+        const SUPABASE_KEY = 'your-anon-key'; // Will be replaced by actual env
+        
+        let results = [];
+        let supabase;
+
+        function addResult(step, status, data = null, error = null) {
+            const timestamp = new Date().toISOString();
+            const result = { step, status, data, error, timestamp };
+            results.push(result);
+            
+            console.log(`[${timestamp}] ${step}:`, { status, data, error });
+            
+            const resultsDiv = document.getElementById('results');
+            const resultCard = document.createElement('div');
+            resultCard.className = `result ${status}`;
+            
+            const icon = status === 'success' ? '✅' : status === 'error' ? '❌' : '⏳';
+            
+            let html = `
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <span style="font-size: 24px;">${icon}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 16px;">${step}</div>
+                        <div class="timestamp">${timestamp}</div>
+            `;
+            
+            if (data) {
+                html += `
+                    <div style="margin-top: 8px;">
+                        <div style="font-size: 12px; color: #999; margin-bottom: 4px;">Data:</div>
+                        <pre style="color: #10b981;">${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            }
+            
+            if (error) {
+                html += `
+                    <div style="margin-top: 8px;">
+                        <div style="font-size: 12px; color: #fca5a5; margin-bottom: 4px;">Error:</div>
+                        <pre style="color: #fca5a5;">${JSON.stringify(error, null, 2)}</pre>
+                    </div>
+                `;
+            }
+            
+            html += `</div></div>`;
+            resultCard.innerHTML = html;
+            resultsDiv.appendChild(resultCard);
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const pending = results.filter(r => r.status === 'pending').length;
+            const success = results.filter(r => r.status === 'success').length;
+            const errors = results.filter(r => r.status === 'error').length;
+            
+            const summaryDiv = document.getElementById('summary');
+            summaryDiv.innerHTML = `
+                <div class="card">
+                    <h2>📋 Test Summary</h2>
+                    <div class="summary">
+                        <div class="stat">
+                            <div class="stat-value" style="color: #3b82f6;">${pending}</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" style="color: #10b981;">${success}</div>
+                            <div class="stat-label">Success</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" style="color: #ef4444;">${errors}</div>
+                            <div class="stat-label">Errors</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function runTest() {
+            const button = document.getElementById('runTest');
+            button.disabled = true;
+            button.textContent = '🔄 Running Test...';
+            
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('summary').innerHTML = '';
+            results = [];
+
+            try {
+                // STEP 1: Get Supabase config from meta tags (set by Vite)
+                addResult('STEP 1: Checking Supabase Configuration', 'pending');
+                
+                // Try to get from window (if set by app)
+                const supabaseUrl = window.VITE_SUPABASE_URL || 'MISSING';
+                const supabaseKey = window.VITE_SUPABASE_ANON_KEY || 'MISSING';
+                
+                if (supabaseUrl === 'MISSING' || supabaseKey === 'MISSING') {
+                    addResult('STEP 1: Supabase Configuration', 'error', null, {
+                        message: 'Environment variables not accessible from static HTML',
+                        solution: 'Use the React app route: /submission-debug instead'
+                    });
+                    return;
+                }
+                
+                addResult('STEP 1: Supabase Configuration', 'success', {
+                    urlExists: true,
+                    keyExists: true
+                });
+
+                // Initialize Supabase
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+                // STEP 2: Test connection
+                addResult('STEP 2: Testing Supabase Connection', 'pending');
+                const { data: testData, error: testError } = await supabase
+                    .from('community_subs')
+                    .select('id')
+                    .limit(1);
+                
+                if (testError) {
+                    addResult('STEP 2: Supabase Connection', 'error', null, testError);
+                } else {
+                    addResult('STEP 2: Supabase Connection', 'success', {
+                        message: 'Connection successful',
+                        rowCount: testData?.length
+                    });
+                }
+
+                // STEP 3: Prepare payload
+                addResult('STEP 3: Preparing Test Payload', 'pending');
+                const testPayload = {
+                    community_name: 'Test Debug Community',
+                    platform: 'whatsapp',
+                    category: 'Technology',
+                    short_description: 'Debug test submission',
+                    long_description: 'This community was created to debug the submission pipeline',
+                    join_link: 'https://example.com',
+                    join_type: 'free',
+                    price_inr: null,
+                    founder_name: 'Test Founder',
+                    founder_bio: 'Testing the submission system',
+                    show_founder_profile: true,
+                    logo_url: null,
+                    verified_request: false,
+                    status: 'pending'
+                };
+                addResult('STEP 3: Test Payload Prepared', 'success', testPayload);
+
+                // STEP 4: Insert
+                addResult('STEP 4: Attempting Supabase Insert', 'pending');
+                console.log('🚀 EXECUTING INSERT NOW...');
+                console.log('📦 Payload:', JSON.stringify(testPayload, null, 2));
+                
+                const insertStartTime = Date.now();
+                const { data: insertData, error: insertError } = await supabase
+                    .from('community_subs')
+                    .insert([testPayload])
+                    .select()
+                    .single();
+                const insertEndTime = Date.now();
+                
+                console.log('📡 INSERT RESPONSE RECEIVED');
+                console.log('⏱️ Time taken:', insertEndTime - insertStartTime, 'ms');
+                console.log('📊 Response Data:', insertData);
+                console.log('❌ Response Error:', insertError);
+
+                if (insertError) {
+                    addResult('STEP 4: Supabase Insert', 'error', null, {
+                        message: insertError.message,
+                        details: insertError.details,
+                        hint: insertError.hint,
+                        code: insertError.code,
+                        fullError: insertError
+                    });
+                    
+                    // Error analysis
+                    let errorAnalysis = '';
+                    if (insertError.message?.includes('column')) {
+                        errorAnalysis = 'Column name mismatch or missing column in database schema';
+                    } else if (insertError.message?.includes('permission') || insertError.message?.includes('policy')) {
+                        errorAnalysis = 'RLS (Row Level Security) policy blocking insert';
+                    } else if (insertError.code === 'PGRST204') {
+                        errorAnalysis = 'Column not found in table schema';
+                    }
+                    
+                    addResult('STEP 5: Error Analysis', 'error', { analysis: errorAnalysis });
+                } else {
+                    addResult('STEP 4: Supabase Insert', 'success', {
+                        insertedId: insertData?.id,
+                        insertedName: insertData?.community_name,
+                        fullRecord: insertData
+                    });
+                    
+                    addResult('STEP 5: Verification', 'success', {
+                        message: '✅ Row successfully inserted!',
+                        record: insertData
+                    });
+                }
+
+            } catch (error) {
+                addResult('GLOBAL ERROR', 'error', null, error);
+            } finally {
+                button.disabled = false;
+                button.textContent = '▶️ Run Full Debug Test';
+                addResult('TEST COMPLETE', 'success', {
+                    totalSteps: results.length,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+
+        document.getElementById('runTest').addEventListener('click', runTest);
+        
+        // Show message about using React route instead
+        console.log('⚠️ Note: This static HTML page cannot access environment variables.');
+        console.log('👉 For full testing, use: https://fourcommunity.com/submission-debug');
+    </script>
+</body>
+</html>

@@ -88,6 +88,14 @@ const DevTools = () => {
               <div className="text-lg font-semibold mb-2">Database Test</div>
               <div className="text-sm opacity-90">Test database connection</div>
             </a>
+            
+            <a 
+              href="/submission-debug" 
+              className="p-4 bg-red-600 hover:bg-red-700 text-white rounded-lg text-center transition"
+            >
+              <div className="text-lg font-semibold mb-2">🔬 Submission Debug</div>
+              <div className="text-sm opacity-90">Full submission flow test</div>
+            </a>
           </div>
 
           <div className="mt-6">
