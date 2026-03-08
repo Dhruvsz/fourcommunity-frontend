@@ -42,6 +42,7 @@ const AutoLoadTest = lazy(() => import('@/pages/AutoLoadTest'));
 const BulletproofTest = lazy(() => import('@/pages/BulletproofTest'));
 const TestDatabase = lazy(() => import('@/pages/TestDatabase'));
 const FormTest = lazy(() => import('@/pages/FormTest'));
+const SubmissionDebugTest = lazy(() => import('@/pages/SubmissionDebugTest'));
 const DevTools = lazy(() => import('@/pages/DevTools'));
 const EmailTest = lazy(() => import('@/pages/EmailTest'));
 const AuthTest = lazy(() => import('@/pages/AuthTest'));
@@ -119,6 +120,7 @@ const App = () => {
                 <Route path="/bulletproof-test" element={<BulletproofTest />} />
                 <Route path="/form-test" element={<FormTest />} />
                 <Route path="/test-database" element={<TestDatabase />} />
+                <Route path="/submission-debug" element={<SubmissionDebugTest />} />
                 <Route path="/onboarding-demo" element={<OnboardingNudgeDemo />} />
 
                 {/* Admin routes - protected by AdminRoute */}
