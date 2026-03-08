@@ -114,6 +114,9 @@ const CommunityInformationForm = ({ onFormValuesChange }: CommunityInformationFo
 
   // Handle form submission
   const onSubmit = async (values: FormValues, event?: React.BaseSyntheticEvent) => {
+    console.log('🚀 STEP 1: Form submission started');
+    console.log('📋 STEP 1.1: Form values:', values);
+    
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -135,22 +138,28 @@ const CommunityInformationForm = ({ onFormValuesChange }: CommunityInformationFo
     
     const emptyFields = Object.entries(requiredFields).filter(([key, value]) => !value);
     if (emptyFields.length > 0) {
+      console.log('❌ STEP 2: Validation failed - empty fields:', emptyFields);
       toast.error("Please complete all required fields", {
         description: "All fields marked with * are required",
       });
       return;
     }
     
+    console.log('✅ STEP 2: Validation passed');
+    
     // Rate limiting
     const lastSubmission = localStorage.getItem('lastSubmissionTime');
     const now = Date.now();
     if (lastSubmission && (now - parseInt(lastSubmission)) < 10000) {
       const remainingTime = Math.ceil((10000 - (now - parseInt(lastSubmission))) / 1000);
+      console.log('⏱️ STEP 3: Rate limit hit, waiting:', remainingTime);
       toast.error("Please wait a moment", {
         description: `You can submit again in ${remainingTime} seconds.`,
       });
       return;
     }
+    
+    console.log('✅ STEP 3: Rate limit check passed');
     
     setIsSubmitting(true);
     
@@ -158,7 +167,12 @@ const CommunityInformationForm = ({ onFormValuesChange }: CommunityInformationFo
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       
+      console.log('🔍 STEP 4: Checking Supabase config');
+      console.log('  - Supabase URL exists:', !!supabaseUrl);
+      console.log('  - Supabase Key exists:', !!supabaseKey);
+      
       if (!supabaseUrl || !supabaseKey) {
+        console.error('❌ STEP 4: Supabase config missing');
         toast.error("Service Unavailable", {
           description: "We're experiencing technical difficulties. Please try again later.",
         });
@@ -181,42 +195,47 @@ const CommunityInformationForm = ({ onFormValuesChange }: CommunityInformationFo
         status: "pending"
       };
 
+      console.log('📦 STEP 5: Prepared submission data:', submissionData);
+
       toast.loading("Processing submission...", { id: "submission-progress", duration: 15000 });
       
+      console.log('🔄 STEP 6: Starting Supabase insert');
+      console.log('📤 STEP 6.1: Calling supabase.from("community_subs").insert()');
+      
+      // DIRECT SUPABASE INSERT - NO NETLIFY FUNCTION
       let data, error;
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const accessToken = sessionData.session?.access_token;
-
-        const submissionPromise = fetch('/.netlify/functions/marketplace-submit-community', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-          },
-          body: JSON.stringify({ submission: submissionData }),
-        }).then(async (res) => {
-          const json = await res.json().catch(() => ({}));
-          if (!res.ok) {
-            const message = json?.error || json?.details || 'Submission failed';
-            throw new Error(message);
-          }
-          return json;
-        });
+        console.log('🚀 STEP 7: Executing Supabase insert NOW...');
         
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Request timeout')), 10000)
-        );
+        const { data: insertData, error: insertError } = await supabase
+          .from('community_subs')
+          .insert([submissionData])
+          .select()
+          .single();
         
-        const result: any = await Promise.race([submissionPromise, timeoutPromise]);
-        data = result.submission;
-        error = null;
+        console.log('📡 STEP 8: Supabase response received');
+        console.log('  - Data:', insertData);
+        console.log('  - Error:', insertError);
+        
+        data = insertData;
+        error = insertError;
+        
+        if (error) {
+          console.error('❌ STEP 8.1: Supabase insert failed:', error);
+          throw error;
+        }
+        
+        console.log('✅ STEP 8.2: Supabase insert successful!');
+        console.log('✅ STEP 8.3: Inserted record ID:', data?.id);
+        
       } catch (submitError) {
+        console.error('❌ STEP 7: Supabase insert threw exception:', submitError);
         error = submitError;
         data = null;
       }
       
       if (error) {
+        console.error('❌ STEP 9: Handling error state');
         toast.dismiss("submission-progress");
         
         let errorMessage = "We couldn't process your submission right now.";
@@ -235,23 +254,7 @@ const CommunityInformationForm = ({ onFormValuesChange }: CommunityInformationFo
         throw error;
       }
       
-      // Send notification (non-blocking)
-      fetch('/.netlify/functions/send-notification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          community_name: data.community_name,
-          founder_name: data.founder_name,
-          category: data.category,
-          platform: data.platform,
-          short_description: data.short_description,
-          join_link: values.joinType === 'paid' ? values.joinLink : data.join_link,
-          join_type: data.join_type,
-          price_inr: data.price_inr,
-          submitted_at: new Date().toISOString(),
-          submission_id: data.id?.toString() || 'unknown'
-        })
-      }).catch(() => {});
+      console.log('✅ STEP 10: Submission successful, showing success message');
       
       toast.dismiss("submission-progress");
       toast.success("Submission Received!", {
@@ -268,13 +271,18 @@ const CommunityInformationForm = ({ onFormValuesChange }: CommunityInformationFo
             value: 1
           });
         }
-      } catch (e) {}
+      } catch (e) {
+        console.log('⚠️ Analytics tracking failed (non-critical):', e);
+      }
       
+      console.log('✅ STEP 11: Setting rate limit and resetting form');
       localStorage.setItem('lastSubmissionTime', now.toString());
       form.reset();
       setIsSubmitted(true);
+      console.log('🎉 STEP 12: SUBMISSION COMPLETE!');
       
     } catch (error) {
+      console.error('❌ STEP FINAL: Caught error in submission:', error);
       toast.dismiss("submission-progress");
       
       let errorMessage = "Please try again in a moment.";
@@ -292,6 +300,7 @@ const CommunityInformationForm = ({ onFormValuesChange }: CommunityInformationFo
       });
       
     } finally {
+      console.log('🏁 STEP CLEANUP: Setting isSubmitting to false');
       setIsSubmitting(false);
     }
   };
