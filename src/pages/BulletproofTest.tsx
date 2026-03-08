@@ -23,7 +23,7 @@ const BulletproofTest = () => {
         join_link: 'https://t.me/bulletprooftest',
         founder_name: 'Bulletproof Tester',
         founder_bio: 'Testing bulletproof loading',
-        show_founder_info: true,
+        show_founder_profile: true,
         logo_url: null,
         status: 'pending'
       };

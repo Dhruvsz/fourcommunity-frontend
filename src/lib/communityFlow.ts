@@ -16,7 +16,7 @@ export interface CommunitySubmission {
   logo_url: string | null;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
-  show_founder_info: boolean;
+  show_founder_profile: boolean;
 }
 
 export interface LiveCommunity {
@@ -206,7 +206,7 @@ export async function submitCommunity(communityData: any): Promise<CommunitySubm
     join_link: communityData.joinLink?.trim() || 'https://example.com',
     founder_name: communityData.founderName?.trim() || 'Anonymous',
     founder_bio: communityData.founderBio?.trim() || '',
-    show_founder_info: communityData.showFounder ?? true,
+    show_founder_profile: communityData.showFounder ?? true,
     logo_url: communityData.logoUrl || null,
     status: "pending"
   };

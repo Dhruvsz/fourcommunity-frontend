@@ -48,8 +48,9 @@ export type Database = {
           owner_id?: string | null
           founder_name: string
           founder_bio: string | null
-          show_founder_info: boolean
+          show_founder_profile: boolean
           logo_url: string | null
+          verified_request: boolean
           status: string
           review_notes: string | null
           reviewed_at: string | null
@@ -69,8 +70,9 @@ export type Database = {
           owner_id?: string | null
           founder_name: string
           founder_bio?: string | null
-          show_founder_info: boolean
+          show_founder_profile: boolean
           logo_url?: string | null
+          verified_request?: boolean
           status?: string
           review_notes?: string | null
           reviewed_at?: string | null
@@ -90,8 +92,9 @@ export type Database = {
           owner_id?: string | null
           founder_name?: string
           founder_bio?: string | null
-          show_founder_info?: boolean
+          show_founder_profile?: boolean
           logo_url?: string | null
+          verified_request?: boolean
           status?: string
           review_notes?: string | null
           reviewed_at?: string | null
@@ -147,7 +150,7 @@ export type Database = {
           join_link: string
           founder_name: string
           founder_bio: string | null
-          show_founder_info: boolean
+          show_founder_profile: boolean
           status: string
           created_at: string
           updated_at: string
@@ -161,7 +164,7 @@ export type Database = {
           join_link: string
           founder_name: string
           founder_bio?: string | null
-          show_founder_info: boolean
+          show_founder_profile: boolean
           status?: string
           created_at?: string
           updated_at?: string
@@ -175,7 +178,7 @@ export type Database = {
           join_link?: string
           founder_name?: string
           founder_bio?: string | null
-          show_founder_info?: boolean
+          show_founder_profile?: boolean
           status?: string
           created_at?: string
           updated_at?: string

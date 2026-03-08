@@ -24,7 +24,7 @@ const AutoLoadTest = () => {
         join_link: 'https://t.me/autoloadtest',
         founder_name: 'Auto Load Tester',
         founder_bio: 'Testing automatic community loading',
-        show_founder_info: true,
+        show_founder_profile: true,
         logo_url: null,
         status: 'pending'
       };

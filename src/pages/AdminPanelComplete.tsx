@@ -130,7 +130,7 @@ const AdminPanelComplete = () => {
         founder_name: 'Test Admin',
         founder_bio: 'Testing the complete flow',
         status: 'pending',
-        show_founder_info: true
+        show_founder_profile: true
       };
 
       const { data, error } = await supabase

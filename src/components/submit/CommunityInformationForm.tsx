@@ -190,8 +190,9 @@ const CommunityInformationForm = ({ onFormValuesChange }: CommunityInformationFo
         price_inr: values.joinType === 'paid' ? (values.priceInr ?? null) : null,
         founder_name: values.founderName?.trim() || 'Anonymous',
         founder_bio: values.founderBio?.trim() || '',
-        show_founder_info: values.showFounder ?? true,
+        show_founder_profile: values.showFounder ?? true,
         logo_url: values.logoUrl || null,
+        verified_request: values.verified ?? false,
         status: "pending"
       };
 

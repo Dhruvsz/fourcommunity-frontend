@@ -29,7 +29,7 @@ const FormTest = () => {
         join_link: 'https://t.me/formtest',
         founder_name: 'Form Tester',
         founder_bio: 'Testing form reliability',
-        show_founder_info: true,
+        show_founder_profile: true,
         logo_url: null,
         status: 'pending'
       };
