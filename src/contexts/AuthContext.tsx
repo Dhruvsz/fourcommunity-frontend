@@ -49,20 +49,10 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  // TEMP: Bypassing auth for testing - remove before production
-  const [user, setUser] = useState<User | null>({
-    id: 'test-user-123',
-    email: 'dhruvchoudhary751@gmail.com',
-    created_at: new Date().toISOString(),
-    app_metadata: {},
-    user_metadata: { full_name: 'Dhruv' },
-    aud: 'authenticated',
-    role: 'authenticated'
-  } as any);
+  const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  // TEMP: Bypassing auth for testing - remove before production
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => setError(null);
