@@ -8,6 +8,7 @@ import posthog from 'posthog-js'
 // Initialize PostHog analytics
 posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
   api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com',
+  defaults: '2026-01-30',
   person_profiles: 'identified_only',
   capture_pageview: true,
   capture_pageleave: true,
