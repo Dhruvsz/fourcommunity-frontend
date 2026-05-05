@@ -34,15 +34,8 @@ import {
 } from "@/components/ui/select";
 import { CommunitySubmission } from "@/types/submission";
 import { useToast } from "@/hooks/use-toast";
-import { useSubmissions } from "@/contexts/SubmissionContext";
 import { supabase } from "@/lib/supabase";
-import { 
-  getPendingSubmissions, 
-  approveCommunity, 
-  rejectCommunity, 
-  deleteCommunitySubmission,
-  CommunitySubmission as FlowSubmission 
-} from "@/lib/communityFlow";
+import { CommunitySubmission as FlowSubmission } from "@/lib/communityFlow";
 
 const statusStylesConfig = {
   "pending": { 
@@ -178,67 +171,88 @@ const Submissions = () => {
     setIsReviewModalOpen(true);
   };
 
-  const handleApprove = async () => {
-    if (!selectedSubmission) return;
-    
-    console.log('🟢 Admin clicked APPROVE for:', selectedSubmission.community_name, 'ID:', selectedSubmission.id);
-    
+  // Helper: get current session token
+  const getToken = async (): Promise<string | null> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token ?? null;
+  };
+
+  const handleApprove = async (id?: string) => {
+    const targetId = id ?? selectedSubmission?.id;
+    const targetName = selectedSubmission?.community_name ?? 'Community';
+    if (!targetId) return;
+
     try {
-      await approveCommunity(Number(selectedSubmission.id));
-      console.log('✅ Approval successful, showing toast');
-      
-      // Close modal first
-      setIsReviewModalOpen(false);
-      setReviewNotes("");
-      
-      // Show success toast
-      toast({
-        title: "Community Approved ✅",
-        description: `${selectedSubmission.community_name} has been approved and is now live on the Communities page!`,
+      const token = await getToken();
+      if (!token) {
+        toast({ title: "Not authenticated", variant: "destructive" });
+        return;
+      }
+
+      const response = await fetch(`/api/admin/approve/${targetId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-      
-      // Refresh submissions list
-      fetchSubmissions();
-      
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsReviewModalOpen(false);
+        setReviewNotes("");
+        toast({
+          title: "Community Approved ✅",
+          description: `${targetName} is now live on the Communities page!`,
+        });
+        fetchSubmissions();
+      } else {
+        throw new Error(data.error || 'Approval failed');
+      }
     } catch (error) {
       console.error('❌ Approval failed:', error);
-      toast({
-        title: "Error",
-        description: "Failed to approve community. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to approve community.", variant: "destructive" });
     }
   };
 
-  const handleReject = async () => {
-    if (!selectedSubmission) return;
-    
-    console.log('🔴 Admin clicked REJECT for:', selectedSubmission.community_name, 'ID:', selectedSubmission.id);
-    
+  const handleReject = async (id?: string) => {
+    const targetId = id ?? selectedSubmission?.id;
+    const targetName = selectedSubmission?.community_name ?? 'Community';
+    if (!targetId) return;
+
     try {
-      await rejectCommunity(Number(selectedSubmission.id));
-      console.log('✅ Rejection successful, showing toast');
-      
-      // Close modal first
-      setIsReviewModalOpen(false);
-      setReviewNotes("");
-      
-      // Show success toast
-      toast({
-        title: "Community Rejected ❌",
-        description: `${selectedSubmission.community_name} has been rejected.`,
+      const token = await getToken();
+      if (!token) {
+        toast({ title: "Not authenticated", variant: "destructive" });
+        return;
+      }
+
+      const response = await fetch(`/api/admin/reject/${targetId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ review_notes: reviewNotes || null })
       });
-      
-      // Refresh submissions list
-      fetchSubmissions();
-      
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsReviewModalOpen(false);
+        setReviewNotes("");
+        toast({
+          title: "Community Rejected ❌",
+          description: `${targetName} has been rejected.`,
+        });
+        fetchSubmissions();
+      } else {
+        throw new Error(data.error || 'Rejection failed');
+      }
     } catch (error) {
       console.error('❌ Rejection failed:', error);
-      toast({
-        title: "Error",
-        description: "Failed to reject community. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to reject community.", variant: "destructive" });
     }
   };
 
@@ -446,22 +460,7 @@ const Submissions = () => {
                       {submission.status === 'pending' && (
                         <Button 
                           size="sm"
-                          onClick={async () => {
-                            try {
-                              await approveCommunity(Number(submission.id));
-                              toast({ 
-                                title: "✅ Community Approved!", 
-                                description: `${submission.community_name} is now live on the Communities page!`,
-                              });
-                              fetchSubmissions();
-                            } catch (error) {
-                              toast({ 
-                                title: "Error", 
-                                description: "Failed to approve community", 
-                                variant: "destructive" 
-                              });
-                            }
-                          }}
+                          onClick={() => handleApprove(submission.id)}
                           className="bg-green-600 hover:bg-green-700 text-white"
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
@@ -476,16 +475,12 @@ const Submissions = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={async () => {
-                            await approveCommunity(Number(submission.id));
-                            toast({ title: "Community approved" });
-                            fetchSubmissions();
-                          }}>Quick Approve</DropdownMenuItem>
-                          <DropdownMenuItem onClick={async () => {
-                            await rejectCommunity(Number(submission.id));
-                            toast({ title: "Community rejected", variant: "destructive" });
-                            fetchSubmissions();
-                          }}>Quick Reject</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleApprove(submission.id)}>
+                            Quick Approve
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleReject(submission.id)}>
+                            Quick Reject
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                       </div>
@@ -596,7 +591,7 @@ const Submissions = () => {
                     <div className="space-y-3">
                       <Button 
                         className="w-full bg-green-600 hover:bg-green-700"
-                        onClick={handleApprove}
+                        onClick={() => handleApprove()}
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
                         Approve Community
@@ -604,7 +599,7 @@ const Submissions = () => {
                       <Button 
                         variant="outline" 
                         className="w-full border-red-600 text-red-400 hover:bg-red-600/10"
-                        onClick={handleReject}
+                        onClick={() => handleReject()}
                       >
                         <XCircle className="h-4 w-4 mr-2" />
                         Reject Submission
