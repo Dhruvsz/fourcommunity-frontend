@@ -15,7 +15,18 @@ import {
   Zap
 } from 'lucide-react';
 import StatCard from '@/components/admin/StatCard';
-import { mockStats, formatCurrency } from '@/lib/mockAdminData';
+
+const mockStats = {
+  totalCommunities: 0,
+  pendingCommunities: 0,
+  totalRevenue: 0,
+  monthlyRevenue: 0,
+  totalMembers: 0,
+  newMembersThisMonth: 0,
+  newCommunitiesThisMonth: 0
+};
+
+const formatCurrency = (val: number) => '₹' + val;
 
 const AdminDashboard = () => {
   return (

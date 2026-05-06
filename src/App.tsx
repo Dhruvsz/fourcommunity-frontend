@@ -124,7 +124,7 @@ const App = () => {
                 <Route path="/onboarding-demo" element={<OnboardingNudgeDemo />} />
 
                 {/* Admin routes - protected by AdminRoute */}
-                <Route path="/admin" element={<AdminLogin />} />
+                <Route path="/admin" element={<AdminRoute><Navigate to="/admin/dashboard" replace /></AdminRoute>} />
 
                 <Route path="/admin/dashboard" element={
                   <AdminRoute>
