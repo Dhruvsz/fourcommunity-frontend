@@ -7,7 +7,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface Community {
   id: string;
@@ -26,7 +25,6 @@ interface Community {
 
 const Communities = () => {
   const { toast } = useToast();
-  const { session } = useAuth();
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,22 +62,18 @@ const Communities = () => {
     }
   };
 
-  const handleAction = async (community: Community, action: 'approve' | 'reject') => {
+  const handleAction = async (community: Community, action: 'approve' | 'reject'): Promise<void> => {
     setActionLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
       const endpoint = action === 'approve'
-        ? `/api/admin/approve/${community.id}`
-        : `/api/admin/reject/${community.id}`;
+        ? `${import.meta.env.VITE_API_URL}/admin/approve/${community.id}`
+        : `${import.meta.env.VITE_API_URL}/admin/reject/${community.id}`;
 
       console.log('Calling endpoint:', endpoint);
-      console.log('Token exists:', !!token);
 
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token || 'bypass'}`,
           'Content-Type': 'application/json',
           'x-admin-key': import.meta.env.VITE_ADMIN_PASSWORD || ''
         },
@@ -89,17 +83,24 @@ const Communities = () => {
       });
 
       console.log('Response status:', response.status);
-      const responseText = await response.text();
-      console.log('Response text:', responseText);
 
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch {
-        throw new Error(`Server returned: ${responseText}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Backend error response:', errorText);
+        let errorMessage: string;
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorJson.message || `HTTP ${response.status}`;
+        } catch {
+          errorMessage = errorText || `HTTP ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
-      if (response.ok && data.success) {
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (data.success) {
         toast({
           title: action === 'approve' ? '✅ Community Approved!' : '❌ Community Rejected',
           description: `${community.community_name} has been ${action}d.`
@@ -108,13 +109,14 @@ const Communities = () => {
         setConfirmDialog({ isOpen: false, action: null, community: null });
         setRejectNotes('');
       } else {
-        throw new Error(data.error || `HTTP ${response.status}`);
+        throw new Error(data.error || 'Action failed');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Something went wrong';
       console.error('Action error:', err);
       toast({
         title: 'Error',
-        description: err.message || 'Something went wrong',
+        description: message,
         variant: 'destructive'
       });
     } finally {
