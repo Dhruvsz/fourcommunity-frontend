@@ -12,12 +12,14 @@ const CompleteSubmissionPage = () => {
 
   const handleAuthSuccess = () => {
     console.log('🎉 Auth success in CompleteSubmissionPage');
-    // Don't reload, just let the component re-render naturally
-    // The auth state change will trigger a re-render automatically
   };
 
+  // TEMP: Allow access for testing
+  // Remove before production
+  const canAccess = true;
+
   // Show loading state
-  if (loading) {
+  if (loading && !canAccess) {
     return (
       <div className="flex flex-col min-h-screen font-sf-pro">
         <Navbar />
@@ -33,7 +35,7 @@ const CompleteSubmissionPage = () => {
   }
 
   // Redirect to submit page if not authenticated
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !canAccess) {
     return (
       <div className="flex flex-col min-h-screen font-sf-pro">
         <Navbar />

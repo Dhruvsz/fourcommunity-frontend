@@ -208,6 +208,10 @@ const CommunityInformationForm = ({ onFormValuesChange }: CommunityInformationFo
       try {
         console.log('🚀 STEP 7: Executing Supabase insert NOW...');
         
+        console.log('🔥 Attempting insert with data:', submissionData);
+        console.log('🔥 Supabase URL:', import.meta.env.VITE_SUPABASE_URL ? 'exists' : 'MISSING');
+        console.log('🔥 Supabase Key:', import.meta.env.VITE_SUPABASE_ANON_KEY ? 'exists' : 'MISSING');
+
         const { data: insertData, error: insertError } = await supabase
           .from('community_subs')
           .insert([submissionData])
