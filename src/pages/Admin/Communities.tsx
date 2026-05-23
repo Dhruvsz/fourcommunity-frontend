@@ -69,7 +69,9 @@ const Communities = () => {
         ? `${import.meta.env.VITE_API_URL}/admin/approve/${community.id}`
         : `${import.meta.env.VITE_API_URL}/admin/reject/${community.id}`;
 
-      console.log('Calling endpoint:', endpoint);
+      console.log('🚀 Calling backend:', endpoint);
+      console.log('🔑 Admin key exists:', !!import.meta.env.VITE_ADMIN_PASSWORD);
+      console.log('🌐 API URL:', import.meta.env.VITE_API_URL);
 
       const response = await fetch(endpoint, {
         method: 'POST',
