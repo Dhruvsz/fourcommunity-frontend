@@ -19,7 +19,7 @@ export const useAdminGuard = (redirectTo: string = '/') => {
     isAuthenticated,
     isAdmin,
     loading,
-    canAccess: true // TEMP: always allow access for testing
+    canAccess: isAuthenticated && isAdmin
   };
 };
 
@@ -30,6 +30,6 @@ export const useAdminCheck = () => {
     isAuthenticated,
     isAdmin,
     loading,
-    canAccess: true // TEMP: always allow access for testing
+    canAccess: isAuthenticated && isAdmin
   };
 };

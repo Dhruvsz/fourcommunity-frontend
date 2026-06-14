@@ -16,7 +16,7 @@ const CompleteSubmissionPage = () => {
 
   // TEMP: Allow access for testing
   // Remove before production
-  const canAccess = true;
+  const canAccess = isAuthenticated;
 
   // Show loading state
   if (loading && !canAccess) {
