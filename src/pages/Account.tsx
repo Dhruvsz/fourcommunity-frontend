@@ -20,6 +20,7 @@ const Account = () => {
   });
   const [walletData, setWalletData] = useState<WalletBalance | null>(null);
   const [showWallet, setShowWallet] = useState(false);
+  const [userCommunities, setUserCommunities] = useState<any[]>([]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -39,9 +40,18 @@ const Account = () => {
       try {
         // Get submissions count
         const { count } = await supabase
-          .from('submissions')
+          .from('community_subs')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
+          .eq('founder_name', user.user_metadata?.full_name || user.email);
+
+        // Get real submitted communities
+        const { data: userCommunities } = await supabase
+          .from('community_subs')
+          .select('id, community_name, status, platform, price_inr, join_type, logo_url, created_at')
+          .or(`founder_name.eq.${user.user_metadata?.full_name},founder_name.eq.${user.email}`)
+          .order('created_at', { ascending: false });
+
+        setUserCommunities(userCommunities || []);
 
         // Get user profile with creation date
         const { data: profileData, error: profileError } = await supabase
@@ -316,61 +326,60 @@ const Account = () => {
                 <h3 className="text-2xl font-bold text-white mb-6">Your Communities</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Free Slot 1 */}
-                  <button
-                    onClick={() => navigate('/submit')}
-                    className="group relative bg-gradient-to-br from-blue-500/10 to-purple-600/10 hover:from-blue-500/20 hover:to-purple-600/20 border border-white/10 rounded-2xl p-8 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 hover:scale-[1.02]"
-                  >
-                    <div className="flex flex-col items-center justify-center gap-4 min-h-[140px]">
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                      </div>
-                      <span className="text-white font-medium text-lg">Add a community</span>
-                    </div>
-                  </button>
-
-                  {/* Free Slot 2 */}
-                  <button
-                    onClick={() => navigate('/submit')}
-                    className="group relative bg-gradient-to-br from-blue-500/10 to-purple-600/10 hover:from-blue-500/20 hover:to-purple-600/20 border border-white/10 rounded-2xl p-8 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 hover:scale-[1.02]"
-                  >
-                    <div className="flex flex-col items-center justify-center gap-4 min-h-[140px]">
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                      </div>
-                      <span className="text-white font-medium text-lg">Add a community</span>
-                    </div>
-                  </button>
-
-                  {/* Locked Premium Slot */}
-                  <button
-                    onClick={() => {
-                      toast.info('Premium Feature', {
-                        description: 'Premium subscription required to add more communities'
-                      });
-                    }}
-                    className="group relative bg-gradient-to-br from-gray-500/10 to-gray-600/10 hover:from-gray-500/20 hover:to-gray-600/20 border border-white/10 rounded-2xl p-8 transition-all duration-300 hover:shadow-lg hover:shadow-gray-500/20 opacity-60 hover:opacity-80"
-                  >
-                    <div className="flex flex-col items-center justify-center gap-4 min-h-[140px]">
-                      <div className="w-16 h-16 bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl flex items-center justify-center relative">
-                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                          </svg>
+                  {userCommunities.map((community) => (
+                    <div
+                      key={community.id}
+                      className="bg-white/5 border border-white/10 rounded-2xl p-6"
+                    >
+                      <div className="flex items-center gap-4 mb-4">
+                        {community.logo_url ? (
+                          <img
+                            src={community.logo_url}
+                            className="w-12 h-12 rounded-xl object-cover"
+                            alt=""
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <span className="text-white font-bold text-lg">
+                              {community.community_name?.charAt(0)}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <h4 className="text-white font-semibold">{community.community_name}</h4>
+                          <p className="text-gray-400 text-sm capitalize">
+                            {community.platform} · {community.join_type === 'paid' ? `₹${community.price_inr}` : 'Free'}
+                          </p>
                         </div>
                       </div>
-                      <span className="text-white font-medium text-lg">Add more communities</span>
-                      <span className="text-xs text-yellow-400 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20 mt-2">
-                        Premium subscription required
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                          community.status === 'approved'
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                            : community.status === 'rejected'
+                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                            : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                        }`}>
+                          {community.status === 'approved' ? '✅ Approved' : community.status === 'rejected' ? '❌ Rejected' : '⏳ Pending'}
+                        </span>
+                        <span className="text-gray-500 text-xs">
+                          {new Date(community.created_at).toLocaleDateString('en-IN')}
+                        </span>
+                      </div>
                     </div>
+                  ))}
+
+                  {/* Add new community button */}
+                  <button
+                    onClick={() => navigate('/submit')}
+                    className="group bg-white/5 hover:bg-white/10 border border-dashed border-white/20 rounded-2xl p-6 transition-all duration-300 flex flex-col items-center justify-center gap-3 min-h-[120px]"
+                  >
+                    <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </div>
+                    <span className="text-white font-medium">Add a community</span>
                   </button>
                 </div>
               </div>
