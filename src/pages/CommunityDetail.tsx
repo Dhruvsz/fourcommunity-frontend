@@ -70,7 +70,7 @@ const CommunityDetail = () => {
               verified: true,
               joinLink: data.join_type === 'paid' ? '' : data.join_link,
               joinType: data.join_type === 'paid' ? 'paid' : 'free',
-              priceInr: typeof data.price_inr === 'number' ? data.price_inr : null,
+              priceInr: data.price_inr ? Number(data.price_inr) : null,
               logo: data.logo_url || '/placeholder-logo.png',
               logoUrl: data.logo_url || '/placeholder-logo.png',
               location: "Global",

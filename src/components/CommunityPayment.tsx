@@ -2,9 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Community } from '@/types/community';
+
+// BUG 3: Separate Supabase client for payments project (Project B)
+const supabasePayments = createClient(
+  import.meta.env.VITE_SUPABASE_PAYMENTS_URL,
+  import.meta.env.VITE_SUPABASE_PAYMENTS_ANON_KEY
+);
 
 interface CommunityPaymentProps {
   community: Community;
@@ -38,7 +45,7 @@ const CommunityPayment: React.FC<CommunityPaymentProps> = ({ community, communit
       try {
         console.log('🔍 Checking membership status for user:', user.id, 'community:', communityId);
         
-        const { data, error } = await supabase
+        const { data, error } = await supabasePayments
           .from('community_memberships')
           .select('status')
           .eq('user_id', user.id)
@@ -111,8 +118,15 @@ const CommunityPayment: React.FC<CommunityPaymentProps> = ({ community, communit
 
       console.log('💳 Creating payment order for user:', user.id, 'community:', communityId);
 
-      // Call backend API with environment-based URL
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      // BUG 4: Always use VITE_API_URL, never fall back to localhost
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        toast.error('API URL not configured', {
+          description: 'VITE_API_URL environment variable is missing.'
+        });
+        setPayLoading(false);
+        return;
+      }
       const requestUrl = `${apiUrl}/create-payment`;
 
       const orderRes = await fetch(requestUrl, {
@@ -146,9 +160,9 @@ const CommunityPayment: React.FC<CommunityPaymentProps> = ({ community, communit
         return;
       }
 
-      // Configure Razorpay options
+      // BUG 2: Use env var instead of hardcoded Razorpay test key
       const options = {
-        key: 'rzp_test_RxY3Kwc8UtOqws', // Your Razorpay test key
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: community.priceInr * 100, // Amount in paisa
         currency: 'INR',
         name: 'FourCommunity',
