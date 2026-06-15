@@ -1,15 +1,24 @@
-// Wallet Service - Ledger-based accounting system
-// Designed for Razorpay webhook integration and auditable transactions
+import { createClient } from '@supabase/supabase-js';
+
+const supabasePayments = createClient(
+  import.meta.env.VITE_SUPABASE_PAYMENTS_URL!,
+  import.meta.env.VITE_SUPABASE_PAYMENTS_ANON_KEY!
+);
+
+const supabaseMain = createClient(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_ANON_KEY!
+);
 
 export interface WalletLedgerEntry {
   id: string;
   user_id: string;
   community_id?: string;
   transaction_type: 'credit' | 'debit';
-  amount: number; // Amount in paisa (₹1 = 100 paisa)
+  amount: number;
   currency: 'INR';
   description: string;
-  reference_id?: string; // Razorpay payment ID, payout ID, etc.
+  reference_id?: string;
   metadata?: Record<string, any>;
   created_at: string;
   processed_at?: string;
@@ -18,9 +27,9 @@ export interface WalletLedgerEntry {
 
 export interface WalletBalance {
   user_id: string;
-  balance: number; // Current balance in paisa
-  total_earned: number; // Total earnings in paisa
-  pending_payout: number; // Pending payout amount in paisa
+  balance: number;
+  total_earned: number;
+  pending_payout: number;
   last_updated: string;
 }
 
@@ -32,64 +41,83 @@ export interface UserCommunity {
 }
 
 class WalletService {
-  // Check if user has approved communities (determines wallet visibility)
+  // Check if user has approved communities
   async hasApprovedCommunities(userId: string): Promise<boolean> {
     try {
-      // This would check the communities table for approved communities by this user
-      // For now, return true for testing - replace with actual Supabase query
-      
-      // Mock logic: For demo purposes, show wallet for all users
-      // In production, this should query the actual communities table
-      return true; // Change to false to test hiding wallet
-      
-      // Real implementation would be:
-      // const { data, error } = await supabase
-      //   .from('communities')
-      //   .select('id')
-      //   .eq('founder_id', userId)
-      //   .eq('status', 'approved')
-      //   .limit(1);
-      // 
-      // return !error && data && data.length > 0;
+      const { data, error } = await supabaseMain
+        .from('community_subs')
+        .select('id')
+        .eq('status', 'approved')
+        .limit(1);
+      return !error && data && data.length > 0;
     } catch (error) {
       console.error('Error checking approved communities:', error);
       return false;
     }
   }
 
-  // Get user's approved communities
+  // Get user's communities
   async getUserCommunities(userId: string): Promise<UserCommunity[]> {
     try {
-      // Mock data - replace with actual Supabase query
-      return [
-        {
-          id: '1',
-          name: 'Tech Enthusiasts',
-          status: 'approved',
-          created_at: new Date().toISOString()
-        }
-      ];
+      const { data, error } = await supabaseMain
+        .from('community_subs')
+        .select('id, community_name, status, created_at')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      return (data || []).map(c => ({
+        id: c.id,
+        name: c.community_name,
+        status: c.status,
+        created_at: c.created_at
+      }));
     } catch (error) {
       console.error('Error fetching user communities:', error);
       return [];
     }
   }
 
-  // Calculate wallet balance from ledger entries (append-only, auditable)
+  // Get real wallet balance from Supabase Project B
   async calculateWalletBalance(userId: string): Promise<WalletBalance> {
     try {
-      // This would query the ledger entries table and calculate balances
-      // For now, return mock data - replace with actual Supabase aggregation
-      
-      const mockBalance: WalletBalance = {
+      // Get all communities owned by this user from Project A
+      const { data: communities } = await supabaseMain
+        .from('community_subs')
+        .select('id');
+
+      if (!communities || communities.length === 0) {
+        return {
+          user_id: userId,
+          balance: 0,
+          total_earned: 0,
+          pending_payout: 0,
+          last_updated: new Date().toISOString()
+        };
+      }
+
+      const communityIds = communities.map(c => c.id);
+
+      // Get wallet data from Project B
+      const { data: wallets, error } = await supabasePayments
+        .from('admin_wallets')
+        .select('balance, total_earned')
+        .in('community_id', communityIds);
+
+      if (error) throw error;
+
+      // Sum up all wallet balances
+      const totalBalance = (wallets || []).reduce((sum, w) => sum + (w.balance || 0), 0);
+      const totalEarned = (wallets || []).reduce((sum, w) => sum + (w.total_earned || 0), 0);
+
+      // Convert rupees to paisa for display
+      return {
         user_id: userId,
-        balance: 345000, // ₹3,450 in paisa
-        total_earned: 520000, // ₹5,200 in paisa  
-        pending_payout: 175000, // ₹1,750 in paisa
+        balance: totalBalance * 100,
+        total_earned: totalEarned * 100,
+        pending_payout: totalBalance * 100,
         last_updated: new Date().toISOString()
       };
-
-      return mockBalance;
     } catch (error) {
       console.error('Error calculating wallet balance:', error);
       return {
@@ -102,39 +130,36 @@ class WalletService {
     }
   }
 
-  // Add ledger entry (for Razorpay webhooks, manual credits, etc.)
-  async addLedgerEntry(entry: Omit<WalletLedgerEntry, 'id' | 'created_at'>): Promise<WalletLedgerEntry> {
-    try {
-      const ledgerEntry: WalletLedgerEntry = {
-        ...entry,
-        id: `ledger_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        created_at: new Date().toISOString()
-      };
-
-      // This would insert into the ledger_entries table
-      // For now, just return the entry - replace with actual Supabase insert
-      console.log('Adding ledger entry:', ledgerEntry);
-      
-      return ledgerEntry;
-    } catch (error) {
-      console.error('Error adding ledger entry:', error);
-      throw error;
-    }
-  }
-
-  // Get ledger history for a user
+  // Get real payment history from Project B
   async getLedgerHistory(userId: string, limit: number = 50): Promise<WalletLedgerEntry[]> {
     try {
-      // This would query the ledger_entries table
-      // For now, return mock data - replace with actual Supabase query
-      return [];
+      const { data, error } = await supabasePayments
+        .from('payments')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+
+      return (data || []).map(p => ({
+        id: p.id,
+        user_id: p.user_id,
+        community_id: p.community_id,
+        transaction_type: 'credit' as const,
+        amount: p.amount,
+        currency: 'INR' as const,
+        description: `Payment for community`,
+        reference_id: p.razorpay_payment_id,
+        created_at: p.created_at,
+        status: p.status === 'captured' ? 'completed' as const : 'pending' as const
+      }));
     } catch (error) {
       console.error('Error fetching ledger history:', error);
       return [];
     }
   }
 
-  // Format amount from paisa to rupees for display
+  // Format amount from paisa to rupees
   formatAmount(amountInPaisa: number): string {
     const rupees = amountInPaisa / 100;
     return new Intl.NumberFormat('en-IN', {
@@ -145,12 +170,10 @@ class WalletService {
     }).format(rupees);
   }
 
-  // Convert rupees to paisa for storage
   rupeesToPaisa(rupees: number): number {
     return Math.round(rupees * 100);
   }
 
-  // Convert paisa to rupees for calculations
   paisaToRupees(paisa: number): number {
     return paisa / 100;
   }
