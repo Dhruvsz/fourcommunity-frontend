@@ -51,7 +51,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // TEMP: Bypassing auth for testing - remove before production
   const [user, setUser] = useState<User | null>({
-    id: 'test-user-123',
+    id: '00000000-0000-0000-0000-000000000123',
     email: 'dhruvchoudhary751@gmail.com',
     created_at: new Date().toISOString(),
     app_metadata: {},
