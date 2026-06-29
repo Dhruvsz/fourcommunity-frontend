@@ -73,7 +73,7 @@ const AdminDashboard = () => {
         .select('*')
         .eq('status', 'captured')
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(10);
 
       setStats({
         totalCommunities: total,
@@ -164,32 +164,53 @@ const AdminDashboard = () => {
         {recentPayments.length === 0 ? (
           <p className="text-gray-500 text-sm">No payments yet</p>
         ) : (
-          <div className="space-y-3">
-            {recentPayments.map(payment => (
-              <div
-                key={payment.id}
-                className="flex justify-between items-center py-3 border-b border-gray-800"
+          <>
+            <div className="space-y-3">
+              {recentPayments.map(payment => (
+                <div key={payment.id} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <div className="text-white text-sm font-medium">{payment.razorpay_payment_id}</div>
+                      <div className="text-gray-500 text-xs mt-1">
+                        {new Date(payment.created_at).toLocaleDateString('en-IN', {
+                          day: 'numeric', month: 'short', year: 'numeric',
+                          hour: '2-digit', minute: '2-digit'
+                        })}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-green-400 font-bold text-lg">
+                        ₹{(payment.amount / 100).toLocaleString('en-IN')}
+                      </div>
+                      <div className="text-xs mt-1">
+                        <span className="text-purple-400">You: ₹{Math.round(payment.amount / 100 * 0.10)}</span>
+                        <span className="text-gray-600 mx-1">·</span>
+                        <span className="text-blue-400">Admin: ₹{Math.round(payment.amount / 100 * 0.90)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <div className="bg-gray-900 rounded p-2">
+                      <div className="text-gray-500 text-xs">User ID</div>
+                      <div className="text-gray-300 text-xs font-mono truncate mt-1">{payment.user_id}</div>
+                    </div>
+                    <div className="bg-gray-900 rounded p-2">
+                      <div className="text-gray-500 text-xs">Community ID</div>
+                      <div className="text-gray-300 text-xs font-mono truncate mt-1">{payment.community_id}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => window.location.href = '/admin/dashboard/payments'}
+                className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
               >
-                <div>
-                  <div className="text-white text-sm font-medium">{payment.razorpay_payment_id}</div>
-                  <div className="text-gray-500 text-xs mt-1">
-                    {new Date(payment.created_at).toLocaleDateString('en-IN', {
-                      day: 'numeric', month: 'short', year: 'numeric',
-                      hour: '2-digit', minute: '2-digit'
-                    })}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-green-400 font-bold">
-                    ₹{(payment.amount / 100).toLocaleString('en-IN')}
-                  </div>
-                  <div className="text-gray-500 text-xs">
-                    You: ₹{Math.round(payment.amount / 100 * 0.10)} · Admin: ₹{Math.round(payment.amount / 100 * 0.90)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                View All Payments →
+              </button>
+            </div>
+          </>
         )}
       </div>
 
