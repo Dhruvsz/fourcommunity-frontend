@@ -172,9 +172,11 @@ const AdminDashboard = () => {
                     <div>
                       <div className="text-white text-sm font-medium">{payment.razorpay_payment_id}</div>
                       <div className="text-gray-500 text-xs mt-1">
-                        {new Date(payment.created_at).toLocaleDateString('en-IN', {
+                        {new Date(payment.created_at).toLocaleString('en-IN', {
                           day: 'numeric', month: 'short', year: 'numeric',
-                          hour: '2-digit', minute: '2-digit'
+                          hour: '2-digit', minute: '2-digit',
+                          hour12: true,
+                          timeZone: 'Asia/Kolkata'
                         })}
                       </div>
                     </div>
